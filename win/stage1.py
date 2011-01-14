@@ -31,7 +31,7 @@ def main():
                 stage2.write(response.read())
                 break
         except Exception as e:
-            sys.stderr.write(str(e) + '\n')
+            sys.stderr.write('stage1: ' + str(e) + '\n')
             times += 1
             time.sleep(7)
 
@@ -40,8 +40,8 @@ def main():
         import stage2
         stage2.main()
     except Exception as e:
-        sys.stderr.write(str(e) + '\n')
-        sys.stderr.write('stage2.py execution failed!')
+        sys.stderr.write('stage1: ' + str(e) + '\n')
+        sys.stderr.write('stage2.py execution failed!\n')
         return 1
 
 if __name__ == '__main__':
