@@ -36,6 +36,7 @@ def main():
                 break
         except Exception as e:
             sys.stderr.write('stage2: ' + str(e) + '\n')
+            sys.stderr.write('uri: ' + uri + '\n')
             times += 1
             time.sleep(7)
 
