@@ -1,14 +1,13 @@
 import sys
 import time
 import urllib2
+import net
 from optparse import OptionParser
 
 def stage2uri():
     """Returns the full URI to the stage2.py script."""
-    # For now, this will just return tyr. Eventually, it'll use
-    # the VMs IP address to determine the gateway to in turn determine
-    # the path.
-    return 'http://tyr.gtisc.gatech.edu/stage2.py'
+    chunks = ['http://', net.gateway(), '/stage2.py']
+    return ''.join(chunks)
 
 def main():
     """main function for standalone usage"""

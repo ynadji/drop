@@ -3,10 +3,12 @@ import os
 import time
 import urllib2
 import stat
+import net
 from optparse import OptionParser
 
 def binarypath():
-    return 'http://tyr.gtisc.gatech.edu/sample.exe'
+    chunks = ['http://', net.gateway(), '/', net.vmnumber(), '/sample.exe']
+    return ''.join(chunks)
 
 def main():
     """main function for standalone usage"""
