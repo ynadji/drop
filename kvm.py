@@ -125,7 +125,7 @@ def main():
                     installsample(options, sample, i)
                     print('Running: %s in VM #%d...' % (sample, i))
                     kvms.append(kvm(options, i))
-                except:
+                except IndexError:
                     print('Malware exhausted, waiting for running KVMs to terminate')
                     pass
 
