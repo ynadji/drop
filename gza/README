@@ -1,0 +1,6 @@
+== GZA -- Basic Network Game Agent ==
+
+GZA/Genius is a python script that, using scapy,
+acts as a network agent to play games with malware
+in an effort to extract additional network information
+such as ip addresses and domain names.
