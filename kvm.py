@@ -40,11 +40,12 @@ def dhcpd_stop():
     os.unlink(DHCPD_CONF_PATH)
     os.system('pkill dhcpd')
 
-def kvm(opts, num):
+def kvm(opts, num, name):
     args = ['kvm', '-usbdevice', 'tablet', '-snapshot',
             '-hda', '%s' % opts.vmimage,'-vnc', ':%d' % num,
             '-net', 'nic,vlan=%d' % num, '-net',
-            'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' % (num, num)]
+            'dump,vlan=%d,file=%s/%d-%s.pcap' % (num, opts.tcpdump, num, name),
+            '-net', 'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' % (num, num)]
     return Popen(args)
 
 def setup(opts):
@@ -81,6 +82,13 @@ def installstage2(opts):
     except shutil.Error: # This occurs if the files are the same
         pass
 
+def pcaporganize(opts):
+    rundir = os.path.join(opts.tcpdump, time.strftime('%Y%m%d-%H:%M:%S'))
+    os.mkdir(rundir)
+    pcaps = glob.glob(os.path.join(opts.tcpdump, '*.pcap'))
+    for pcap in pcaps:
+        shutil.move(pcap, rundir)
+
 def main():
     """main function for standalone usage"""
     usage = "usage: %prog [options] maldir"
@@ -95,6 +103,8 @@ def main():
             help="Stage 2 script [default: %default]")
     parser.add_option("-i", "--iptables", dest="iptables", default="iptables",
             help="IPtables script to perform NAT/abuse prevention [default: %default]")
+    parser.add_option("-d", "--tcpdump-dir", dest="tcpdump", default="tcpdump",
+            help="Directory for tcpdump pcaps [default: %default]")
     parser.add_option("-v", "--vm-image", dest="vmimage",
             default="/home/yacin/images/fresh_installs/winxp.qcow2",
             help="VM image path [default: %default]")
@@ -108,6 +118,12 @@ def main():
     if not os.geteuid() == 0:
         sys.stderr.write('Only root can run this script\n')
         sys.exit(1)
+
+    # Pcap dir
+    try:
+        os.mkdir(options.tcpdump)
+    except OSError: # Use an existing directory
+        pass
 
     try:
         # Run them VMs!
@@ -124,7 +140,7 @@ def main():
                     sample = malware.pop(0)
                     installsample(options, sample, i)
                     print('Running: %s in VM #%d...' % (sample, i))
-                    kvms.append(kvm(options, i))
+                    kvms.append(kvm(options, i, os.path.basename(sample)))
                 except IndexError:
                     print('Malware exhausted, waiting for running KVMs to terminate')
                     pass
@@ -141,9 +157,8 @@ def main():
         sys.stderr.write('User termination...')
         for proc in kvms:
             proc.terminate()
-    except Exception as e:
-        sys.stderr.write(str(e))
     finally:
+        pcaporganize(options)
         teardown(options)
 
 if __name__ == '__main__':
