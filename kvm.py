@@ -24,12 +24,12 @@ def dhcpd_start(opts):
             'log-facility local7;']
     entry = """subnet 192.168.%d.0 netmask 255.255.255.0 {
     range 192.168.%d.41 192.168.%d.254;
-    option domain-name-servers 192.168.%d.1;
+    option domain-name-servers %s;
     option routers 192.168.%d.1;
 }
 """
     for i in range(1, opts.numvms + 1):
-        conf.append(entry % (i, i, i, i, i))
+        conf.append(entry % (i, i, i, opts.dns, i))
 
     with open(DHCPD_CONF_PATH, 'w') as conffile:
         conffile.write('\n'.join(conf))
@@ -105,6 +105,8 @@ def main():
             help="IPtables script to perform NAT/abuse prevention [default: %default]")
     parser.add_option("-d", "--tcpdump-dir", dest="tcpdump", default="tcpdump",
             help="Directory for tcpdump pcaps [default: %default]")
+    parser.add_option("--dns", dest="dns", default="8.8.8.8",
+            help="DNS resolver to use [default: %default]")
     parser.add_option("-v", "--vm-image", dest="vmimage",
             default="/home/yacin/images/fresh_installs/winxp.qcow2",
             help="VM image path [default: %default]")
