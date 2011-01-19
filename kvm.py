@@ -43,8 +43,8 @@ def dhcpd_stop():
 def kvm(opts, num):
     args = ['kvm', '-usbdevice', 'tablet', '-snapshot',
             '-hda', '%s' % opts.vmimage,'-vnc', ':%d' % num,
-            '-net', 'nic,vlan=0', '-net',
-            'tap,vlan=0,ifname=tap%d,script=no,downscript=no' % num]
+            '-net', 'nic,vlan=%d' % num, '-net',
+            'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' % (num, num)]
     return Popen(args)
 
 def setup(opts):
