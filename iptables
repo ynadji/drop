@@ -1,0 +1,17 @@
+*nat
+:PREROUTING ACCEPT [0:0]
+-A PREROUTING -p tcp -m tcp --dport 25 -j DNAT --to 143.215.130.30:25
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -o eth0 -s 192.168.0.0/16 -j SNAT --to 143.215.130.159
+:OUTPUT ACCEPT [0:0]
+COMMIT
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+-A FORWARD -s 192.168.0.0/16 -d 192.168.0.0/16 -j DROP
+-A FORWARD -p udp -m udp --dport 135:139 -j DROP
+-A FORWARD -p tcp -m tcp --dport 135:139 -j DROP
+-A FORWARD -p udp -m udp --dport 445 -j DROP
+-A FORWARD -p tcp -m tcp --dport 445 -j DROP
+:OUTPUT ACCEPT [0:0]
+COMMIT
