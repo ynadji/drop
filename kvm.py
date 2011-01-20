@@ -14,6 +14,7 @@ import os
 import shutil
 import glob
 import time
+from signal import SIGINT
 from subprocess import Popen
 from optparse import OptionParser
 
@@ -115,6 +116,8 @@ def main():
             help="Directory for tcpdump pcaps [default: %default]")
     parser.add_option("--dns", dest="dns", default="8.8.8.8",
             help="DNS resolver to use [default: %default]")
+    parser.add_option("-g", "--games", dest="games", default="none",
+            help="Games to play (comma separated list of: none,dns,dns5)")
     parser.add_option("-c", "--cleanup", dest="cleanup", default=False,
             action="store_true", help="Perform teardown operation")
     parser.add_option("-v", "--vm-image", dest="vmimage",
@@ -142,42 +145,78 @@ def main():
     except OSError: # Use an existing directory
         pass
 
+    games = options.games.split(',')
+    if games == ['none']:
+        startgame = lambda x: x
+    else:
+        sys.path.append('gza')
+        from gza import startgame
+
+    mod = options.numvms % len(games)
+    if mod != 0:
+        options.numvms -= mod
+        sys.stderr.write('Cannot evenly distribute concurrent VMs, only using %d VMs.\n'
+                % options.numvms)
+
     try:
         # Run them VMs!
         setup(options)
         time.sleep(5)
 
         kvms = []
+        gamepids = []
+        vmlabels = range(1, options.numvms + 1)
         malware = glob.glob(os.path.join(args[0], "*"))
         # Runnin em
         while malware:
-            for i in range(1, options.numvms + 1):
-                # RUN DAT SHIT
+            while vmlabels:
                 try:
                     sample = malware.pop(0)
-                    installsample(options, sample, i)
-                    print('Running: %s in VM #%d...' % (sample, i))
-                    kvms.append(kvm(options, i, os.path.basename(sample)))
                 except IndexError:
                     print('Malware exhausted, waiting for running KVMs to terminate')
-                    pass
+                    break
+                for game in games:
+                    # RUN DAT SHIT
+                    i = vmlabels.pop(0)
+                    installsample(options, sample, i)
+                    print('Running: %s in VM #%d with game "%s"' % (sample, i, game))
+                    # Can't terminate threads in python, so we'll fork the
+                    # infinite loop in startgame and send/handle SIGINT.
+                    pid = os.fork()
+                    if pid == 0:
+                        print('child')
+                        startgame(game, i)
+                        sys.exit(0)
+
+                    gamepids.append(pid)
+                    kvms.append(kvm(options, i,
+                        os.path.basename(sample) + '-' + game))
 
             print('Sleeping for %d seconds...' % options.runtime)
             time.sleep(options.runtime)
             print('Terminating KVMs...')
             for proc in kvms:
                 proc.terminate()
+            for pid in gamepids:
+                os.kill(pid, SIGINT)
             del kvms[:]
+            del gamepids[:]
+            vmlabels = range(1, options.numvms + 1)
             print('KVMs terminated')
             time.sleep(5)
 
         pcaporganize(options)
     except KeyboardInterrupt:
-        sys.stderr.write('User termination...')
         for proc in kvms:
             proc.terminate()
-    finally:
+        for pid in gamepids:
+            os.kill(pid, SIGINT)
+        sys.stderr.write('User termination...')
         teardown(options)
+    except: # Can't do finally for teardown, exiting childs will execute it too.
+        import traceback
+        sys.stderr.write('Abnormal termination, clean up with ./kvm.py -c\n')
+        traceback.print_exc(file=sys.stderr)
 
 if __name__ == '__main__':
     sys.exit(main())
