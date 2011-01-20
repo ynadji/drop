@@ -47,7 +47,7 @@ def kvm(opts, num, name):
     args = ['kvm', '-usbdevice', 'tablet', '-snapshot',
             '-hda', '%s' % opts.vmimage,'-vnc', ':%d' % num,
             '-net', 'nic,vlan=%d' % num, '-net',
-            'dump,vlan=%d,file=%s/%d-%s.pcap' % (num, opts.tcpdump, num, name),
+            'dump,vlan=%d,file=%s/%s.pcap' % (num, opts.tcpdump, name),
             '-net', 'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' % (num, num)]
     return Popen(args)
 
@@ -163,12 +163,13 @@ def main():
             del kvms[:]
             print('KVMs terminated')
             time.sleep(5)
+
+        pcaporganize(options)
     except KeyboardInterrupt:
         sys.stderr.write('User termination...')
         for proc in kvms:
             proc.terminate()
     finally:
-        pcaporganize(options)
         teardown(options)
 
 if __name__ == '__main__':
