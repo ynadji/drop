@@ -7,19 +7,6 @@ import sys,os,time
 import nfqueue
 import socket
 
-# Set log level to benefit from Scapy warnings
-import logging
-logging.getLogger("scapy").setLevel(1)
-
-# my logging
-log = logging.getLogger("dns.py")
-log.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(name)s - %(levelname)s: %(message)s")
-ch = logging.StreamHandler()
-ch.setFormatter(formatter)
-ch.setLevel(logging.DEBUG)
-log.addHandler(ch)
-
 WHITELIST_DOMAINS = ["time.windows.com."]
 seen_domains = {}
 TRIES = 1
@@ -56,20 +43,20 @@ def spoof(packet):
     dnsqr = packet[DNSQR]
 
     # whitelist
-    log.debug("domain name: %s", dnsqr.qname)
+    print("Domain name: %s" % dnsqr.qname)
     # increment count if seen
     if dnsqr.qname in seen_domains:
         if seen_domains[dnsqr.qname] == TRIES:
-            log.debug("seen %d times, letting through", TRIES)
+            print("Seen %d times, accept" % TRIES)
             return False
         else:
             seen_domains[dnsqr.qname] += 1
 
     if dnsqr.qname in WHITELIST_DOMAINS:
-        log.debug("domain %s whitelisted", dnsqr.qname)
+        print("Domain %s whitelisted" % dnsqr.qname)
         return False
     else:
-        log.debug("spoofing nxdomain")
+        print("Spoofing nxdomain")
         nx = nxdomain(packet)
         send(nx)
 
@@ -83,11 +70,9 @@ def playgame(i, payload):
     data = payload.get_data()
     packet = IP(data)
     if packet.haslayer(DNS) and spoof(packet):
-        log.debug("dns packet match found")
         payload.set_verdict(nfqueue.NF_DROP)
         return
     else:
-        log.debug("no match")
         payload.set_verdict(nfqueue.NF_ACCEPT)
         return
 
