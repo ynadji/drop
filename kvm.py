@@ -115,19 +115,26 @@ def main():
             help="Directory for tcpdump pcaps [default: %default]")
     parser.add_option("--dns", dest="dns", default="8.8.8.8",
             help="DNS resolver to use [default: %default]")
+    parser.add_option("-c", "--cleanup", dest="cleanup", default=False,
+            action="store_true", help="Perform teardown operation")
     parser.add_option("-v", "--vm-image", dest="vmimage",
             default="/home/yacin/images/fresh_installs/winxp.qcow2",
             help="VM image path [default: %default]")
 
     (options, args) = parser.parse_args()
 
-    if len(args) != 1:
-        parser.print_help()
-        return 2
-
     if not os.geteuid() == 0:
         sys.stderr.write('Only root can run this script\n')
         sys.exit(1)
+
+    if options.cleanup:
+        print('Tearing down previous set up...')
+        teardown(options)
+        return 0
+
+    if len(args) != 1:
+        parser.print_help()
+        return 2
 
     # Pcap dir
     try:
