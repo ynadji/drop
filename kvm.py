@@ -37,7 +37,10 @@ def dhcpd_start(opts):
     os.system('dhcpd -cf %s' % DHCPD_CONF_PATH)
 
 def dhcpd_stop():
-    os.unlink(DHCPD_CONF_PATH)
+    try:
+        os.unlink(DHCPD_CONF_PATH)
+    except:
+        pass
     os.system('pkill dhcpd')
 
 def kvm(opts, num, name):
