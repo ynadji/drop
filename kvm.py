@@ -123,6 +123,8 @@ def main():
     parser.add_option("-v", "--vm-image", dest="vmimage",
             default="/home/yacin/images/fresh_installs/winxp.qcow2",
             help="VM image path [default: %default]")
+    parser.add_option("-l", "--game-log", dest="gamelog", default="game.log",
+            help="Logfile for gameplay debug output [default: %default]")
 
     (options, args) = parser.parse_args()
 
@@ -167,6 +169,7 @@ def main():
         gamepids = []
         vmlabels = range(1, options.numvms + 1)
         malware = glob.glob(os.path.join(args[0], "*"))
+        gamelog = open(options.gamelog, 'w')
         # Runnin em
         while malware:
             while vmlabels:
@@ -184,6 +187,7 @@ def main():
                     # infinite loop in startgame and send/handle SIGINT.
                     pid = os.fork()
                     if pid == 0:
+                        sys.stdout = gamelog
                         startgame(game, i)
                         sys.exit(0)
 
@@ -212,6 +216,7 @@ def main():
             os.kill(pid, SIGINT)
         sys.stderr.write('User termination...')
 
+    gamelog.close()
     teardown(options)
 if __name__ == '__main__':
     sys.exit(main())
