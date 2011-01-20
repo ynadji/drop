@@ -54,7 +54,12 @@ def setup(opts):
     for i in range(1, opts.numvms + 1):
         os.system('tunctl -u root -t tap%d' % i)
         os.system('ifconfig tap%d 192.168.%d.1 netmask 255.255.255.0 up' % (i, i))
-        os.mkdir(os.path.join(opts.webroot, str(i)))
+        try:
+            sampledir = os.path.join(opts.webroot, str(i))
+            os.mkdir(sampledir)
+        except OSError:
+            shutil.rmtree(sampledir)
+            os.mkdir(sampledir)
 
     time.sleep(10)
     os.system('sysctl -w net.ipv4.ip_forward=1')
