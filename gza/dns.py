@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # DNS gameplay
 
 from scapy.all import *
@@ -23,6 +23,11 @@ log.addHandler(ch)
 WHITELIST_DOMAINS = ["time.windows.com."]
 seen_domains = {}
 TRIES = 1
+
+ADD = '-A'
+DEL = '-D'
+IPTABLES_COMMAND = \
+        'iptables %s FORWARD -d 192.168.%d.0/24 -m udp -p udp -j NFQUEUE --queue-num %d'
 
 def remove_computed_fields(pkt):
     del(pkt[IP].chksum)
@@ -86,24 +91,26 @@ def playgame(i, payload):
         payload.set_verdict(nfqueue.NF_ACCEPT)
         return
 
-def cleanup(q):
+def startgame(vmnum):
+    os.system(IPTABLES_COMMAND % (ADD, vmnum, vmnum))
+    q = nfqueue.queue()
+    q.open()
+    q.set_callback(playgame)
+    q.fast_open(vmnum, socket.AF_INET)
+    try:
+        q.try_run()
+    except KeyboardInterrupt:
+        stopgame(vmnum, q)
+
+def stopgame(vmnum, q):
+    os.system(IPTABLES_COMMAND % (DEL, vmnum, vmnum))
+    print("Exiting...")
     q.unbind(socket.AF_INET)
-    sys.exit(1)
+    sys.exit(0)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print "usage: ./dns.py QUEUENUM"
         sys.exit(1)
 
-    qnum = int(sys.argv[1])
-
-    q = nfqueue.queue()
-    q.open()
-    q.set_callback(playgame)
-    q.fast_open(qnum, socket.AF_INET)
-    try:
-        q.try_run()
-    except KeyboardInterrupt:
-        print "Exiting..."
-        q.unbind(socket.AF_INET)
-        sys.exit(1)
+    startgame(int(sys.argv[1]))

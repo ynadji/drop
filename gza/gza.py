@@ -3,11 +3,31 @@
 from scapy.all import *
 import dns
 import tcp
+from optparse import OptionParser
 
 def playgame(packet):
     """playgame!"""
     dns.playgame(packet)
 
+def startgame(gamename, i):
+    if gamename == 'dns':
+        dns.startgame(i)
+    elif gamename == 'tcp':
+        tcp.startgame(i)
+
+def main():
+    """main function for standalone usage"""
+    usage = "usage: %prog [options] game vmnum"
+    parser = OptionParser(usage=usage)
+
+    (options, args) = parser.parse_args()
+
+    if len(args) != 2:
+        parser.print_help()
+        return 2
+
+    # do stuff
+    startgame(args[0], int(args[1]))
+
 if __name__ == '__main__':
-    # first 10 dns packets, both queries/responses
-    sniff(prn=playgame, filter="udp and port 53", count=20)
+    sys.exit(main())
