@@ -102,6 +102,10 @@ def main():
     """main function for standalone usage"""
     usage = "usage: %prog [options] maldir"
     parser = OptionParser(usage=usage)
+    parser.add_option("-g", "--games", dest="games", default="none",
+            help="Games to play (comma separated list of: none,dns,dns5)")
+    parser.add_option("-c", "--cleanup", dest="cleanup", default=False,
+            action="store_true", help="Perform teardown operation")
     parser.add_option("-n", "--num-vms", dest="numvms", default=4,
             type="int", help="Number of VMs to use [default: %default]")
     parser.add_option("-t", "--runtime", dest="runtime", default=300,
@@ -116,10 +120,6 @@ def main():
             help="Directory for tcpdump pcaps [default: %default]")
     parser.add_option("--dns", dest="dns", default="8.8.8.8",
             help="DNS resolver to use [default: %default]")
-    parser.add_option("-g", "--games", dest="games", default="none",
-            help="Games to play (comma separated list of: none,dns,dns5)")
-    parser.add_option("-c", "--cleanup", dest="cleanup", default=False,
-            action="store_true", help="Perform teardown operation")
     parser.add_option("-v", "--vm-image", dest="vmimage",
             default="/home/yacin/images/fresh_installs/winxp.qcow2",
             help="VM image path [default: %default]")
