@@ -184,7 +184,6 @@ def main():
                     # infinite loop in startgame and send/handle SIGINT.
                     pid = os.fork()
                     if pid == 0:
-                        print('child')
                         startgame(game, i)
                         sys.exit(0)
 
