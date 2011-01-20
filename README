@@ -2,6 +2,18 @@
 Drop is a series of scripts that make dynamic malware analysis more
 straightforward with kvm.
 
+= Dependencies =
+
+== Drop ==
+isc-dhcp-server
+sudo
+iptables
+kvm
+tunctl (and tun/tap setup)
+
+== GZA ==
+nfqueue-bindings-python
+
 = License =
 Copyright (c) 2011 Yacin Nadji
 
