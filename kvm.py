@@ -211,11 +211,11 @@ def main():
         for pid in gamepids:
             os.kill(pid, SIGINT)
         sys.stderr.write('User termination...')
-        teardown(options)
     except: # Can't do finally for teardown, exiting childs will execute it too.
         import traceback
         sys.stderr.write('Abnormal termination, clean up with ./kvm.py -c\n')
         traceback.print_exc(file=sys.stderr)
 
+    teardown(options)
 if __name__ == '__main__':
     sys.exit(main())
