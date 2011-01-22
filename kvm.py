@@ -44,13 +44,21 @@ def dhcpd_stop():
         pass
     os.system('pkill dhcpd')
 
-def kvm(opts, num, name):
-    args = ['kvm', '-usbdevice', 'tablet', '-snapshot',
+def kvmmakeargs(opts, num, name):
+    return ['kvm', '-usbdevice', 'tablet', '-snapshot',
             '-hda', '%s' % opts.vmimage,'-vnc', ':%d' % num,
             '-net', 'nic,vlan=%d' % num, '-net',
             'dump,vlan=%d,file=%s/%s.pcap' % (num, opts.tcpdump, name),
             '-net', 'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' % (num, num)]
+
+def kvm(opts, num, name):
+    args = kvmmakeargs(opts, num, name)
     return Popen(args)
+
+def kvmcall(opts, num, name):
+    args = kvmmakeargs(opts, num, name)
+    args.insert(0, 'sudo')
+    return ' '.join(args)
 
 def setup(opts):
     installstage2(opts)
@@ -125,6 +133,9 @@ def main():
             help="VM image path [default: %default]")
     parser.add_option("-l", "--game-log", dest="gamelog", default="game.log",
             help="Logfile for gameplay debug output [default: %default]")
+    parser.add_option("-k", "--sample-kvm-cmd", dest="kvmcmd", default=False,
+            action="store_true",
+            help="Output a KVM call based on the other options (to debug)")
 
     (options, args) = parser.parse_args()
 
@@ -135,6 +146,10 @@ def main():
     if options.cleanup:
         print('Tearing down previous set up...')
         teardown(options)
+        return 0
+
+    if options.kvmcmd:
+        print(kvmcall(options, 1, 'gamename'))
         return 0
 
     if len(args) != 1:
