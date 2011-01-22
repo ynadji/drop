@@ -3,16 +3,17 @@ Drop is a series of scripts that make dynamic malware analysis more
 straightforward with kvm.
 
 = Dependencies =
+This code was written and tested on debian squeeze.
 
 == Drop ==
-isc-dhcp-server
+isc-dhcp-server (used isc-dhcpd-4.1.1-P1)
 sudo
 iptables
-kvm
+kvm (used QEMU PC emulator version 0.12.5 (qemu-kvm-0.12.5))
 tunctl (and tun/tap setup)
 
 == GZA ==
-nfqueue-bindings-python
+nfqueue-bindings-python (used 0.3)
 
 = License =
 Copyright (c) 2011 Yacin Nadji
