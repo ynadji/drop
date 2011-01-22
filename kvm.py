@@ -214,7 +214,7 @@ def main():
             proc.terminate()
         for pid in gamepids:
             os.kill(pid, SIGINT)
-        sys.stderr.write('User termination...')
+        sys.stderr.write('User termination...\n')
 
     gamelog.close()
     teardown(options)
