@@ -78,10 +78,19 @@ def playgame(i, payload):
 
 def startgame(vmnum):
     os.system(IPTABLES_COMMAND % (ADD, vmnum, vmnum))
-    q = nfqueue.queue()
-    q.open()
-    q.set_callback(playgame)
-    q.fast_open(vmnum, socket.AF_INET)
+    goodtogo = False
+    while not goodtogo:
+        try:
+            q = nfqueue.queue()
+            q.open()
+            q.set_callback(playgame)
+            q.fast_open(vmnum, socket.AF_INET)
+            goodtogo = True
+        except RuntimeError:
+            sys.stderr.write('fast_open on %d for game %s failed, trying again\n' % (vmnum, 'dns'))
+            q.unbind(socket.AF_INET)
+            os.system(IPTABLES_COMMAND % (DEL, vmnum, vmnum))
+            time.sleep(7)
     try:
         q.try_run()
     except KeyboardInterrupt:

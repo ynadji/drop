@@ -3,6 +3,7 @@
 from scapy.all import *
 import dns
 import tcp
+import dnsnever
 from optparse import OptionParser
 
 def playgame(packet):
@@ -14,6 +15,8 @@ def startgame(gamename, i):
         dns.startgame(i)
     elif gamename == 'tcp':
         tcp.startgame(i)
+    elif gamename == 'dnsnever':
+        dnsnever.startgame(i)
 
 def main():
     """main function for standalone usage"""
