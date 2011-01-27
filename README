@@ -12,7 +12,7 @@ isc-dhcp-server (isc-dhcpd-4.1.1-P1)
 sudo
 iptables
 kvm (qemu-kvm-0.12.5)
-tunctl (and tun/tap setup)
+uml-utilities -- for tunctl (and tun/tap setup)
 
 == GZA ==
 nfqueue-bindings-python (0.3)
