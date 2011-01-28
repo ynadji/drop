@@ -1,42 +1,10 @@
 #!/usr/bin/env python
 
+import sys
 from scapy.all import *
-import dns
-import tcp
+from dns import DNSGZA
+from tcp import TCPGZA
 from optparse import OptionParser
-import nfqueue
-import socket
-import signal
-
-class GZA(object):
-    def __init__(self, gamestate, vmnum, opts):
-        self.gamestate = gamestate
-        self.vmnum = vmnum
-        self.opts = opts
-        signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
-
-    def reset(self, signum, frame):
-        print('Cleared game state!')
-        self.gamestate.clear()
-        try:
-            self.q.try_run()
-        except KeyboardInterrupt:
-            self.q.unbind(socket.AF_INET)
-            sys.exit(0)
-
-    def playgame(self, i, payload):
-        payload.set_verdict(nfqueue.NF_ACCEPT)
-
-    def startgame(self):
-        self.q = nfqueue.queue()
-        self.q.open()
-        self.q.set_callback(self.playgame)
-        self.q.fast_open(self.vmnum, socket.AF_INET)
-        try:
-            self.q.try_run()
-        except KeyboardInterrupt:
-            self.q.unbind(socket.AF_INET)
-            sys.exit(0)
 
 def main():
     """main function for standalone usage"""
@@ -58,13 +26,17 @@ def main():
     if len(args) != 2:
         parser.print_help()
         return 2
-    if args[0] != 'dns' and args[1] != 'tcp':
+    if args[0] != 'dns' and args[0] != 'tcp':
         parser.print_help()
+        return 2
     if options.taken >= 0 and options.dropn >= 0:
         parser.error('--take-n and --drop-n are mutually exclusive. Only use one.')
 
     # do stuff
-    g = GZA({}, int(args[1]), options)
+    if args[0] == 'dns':
+        g = DNSGZA({}, int(args[1]), options)
+    else:
+        g = TCPGZA({}, int(args[1]), options)
     g.startgame()
 
 if __name__ == '__main__':
