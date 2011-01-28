@@ -9,9 +9,10 @@ import socket
 import signal
 
 class GZA(object):
-    def __init__(self, gamestate, vmnum):
+    def __init__(self, gamestate, vmnum, opts):
         self.gamestate = gamestate
         self.vmnum = vmnum
+        self.opts = opts
         signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
 
     def reset(self, signum, frame):
@@ -36,10 +37,6 @@ class GZA(object):
         except KeyboardInterrupt:
             self.q.unbind(socket.AF_INET)
             sys.exit(0)
-
-def startgame(gamename, vmnum):
-    g = GZA({}, vmnum)
-    g.startgame()
 
 def main():
     """main function for standalone usage"""
@@ -67,7 +64,8 @@ def main():
         parser.error('--take-n and --drop-n are mutually exclusive. Only use one.')
 
     # do stuff
-    startgame(args[0], int(args[1]))
+    g = GZA({}, int(args[1]), options)
+    g.startgame()
 
 if __name__ == '__main__':
     sys.exit(main())
