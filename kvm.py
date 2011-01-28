@@ -60,12 +60,29 @@ def kvmcall(opts, num, name):
     args.insert(0, 'sudo')
     return ' '.join(args)
 
+def nfqueue_rule(i, games):
+    game = games[(i - 1) % len(games)]
+    if game == 'none':
+        return
+    elif game.startswith('dns'):
+        transporttype = 'udp'
+    elif game.startswith('tcp'):
+        transporttype = 'tcp'
+    else:
+        sys.stderr.write('Unknown nfqueue rule for game %s\n' % game)
+        return
+
+    os.system('iptables -A FORWARD -d 192.168.%d.0/24 -m %s -p %s -j NFQUEUE --queue-num %d'
+                    % (i, transporttype, transporttype, i))
+
 def setup(opts):
     installstage2(opts)
+    games = opts.games.split(',')
     # loop
     for i in range(1, opts.numvms + 1):
         os.system('tunctl -u root -t tap%d' % i)
         os.system('ifconfig tap%d 192.168.%d.1 netmask 255.255.255.0 up' % (i, i))
+        nfqueue_rule(i, games)
         try:
             sampledir = os.path.join(opts.webroot, str(i))
             os.mkdir(sampledir)
