@@ -4,18 +4,42 @@ from scapy.all import *
 import dns
 import tcp
 from optparse import OptionParser
+import nfqueue
+import socket
+import signal
 
-def playgame(packet):
-    """playgame!"""
-    dns.playgame(packet)
+class GZA(object):
+    def __init__(self, gamestate, vmnum):
+        self.gamestate = gamestate
+        self.vmnum = vmnum
+        signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
 
-def startgame(gamename, i):
-    if gamename == 'dns':
-        dns.startgame(i)
-    elif gamename == 'tcp':
-        tcp.startgame(i)
-    elif gamename == 'dnsnever':
-        dnsnever.startgame(i)
+    def reset(self, signum, frame):
+        print('Cleared game state!')
+        self.gamestate.clear()
+        try:
+            self.q.try_run()
+        except KeyboardInterrupt:
+            self.q.unbind(socket.AF_INET)
+            sys.exit(0)
+
+    def playgame(self, i, payload):
+        payload.set_verdict(nfqueue.NF_ACCEPT)
+
+    def startgame(self):
+        self.q = nfqueue.queue()
+        self.q.open()
+        self.q.set_callback(self.playgame)
+        self.q.fast_open(self.vmnum, socket.AF_INET)
+        try:
+            self.q.try_run()
+        except KeyboardInterrupt:
+            self.q.unbind(socket.AF_INET)
+            sys.exit(0)
+
+def startgame(gamename, vmnum):
+    g = GZA({}, vmnum)
+    g.startgame()
 
 def main():
     """main function for standalone usage"""
