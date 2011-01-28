@@ -2,6 +2,7 @@ import sys
 import nfqueue
 import socket
 import signal
+import whitelist
 
 class GZA(object):
     def __init__(self, gamestate, vmnum, opts):
@@ -9,6 +10,9 @@ class GZA(object):
         self.vmnum = vmnum
         self.opts = opts
         signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
+        if self.opts.whitelist:
+            whitelist.makewhitelist(opts.whitelistpath)
+            self.whitelisted = whitelist.whitelisted
 
     def reset(self, signum, frame):
         print('Cleared game state!')
