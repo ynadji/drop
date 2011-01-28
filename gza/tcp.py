@@ -13,8 +13,8 @@ WHITELIST_IPS = ["207.46.232.", "172.22.0.", "172.22.10.", "192.168.", "0.0.0.0"
 seen_ips = []
 
 class TCPGZA(GZA):
-    def __init__(self, gamestate, vmnum, opts):
-        super(TCPGZA, self).__init__(gamestate, vmnum, opts)
+    def __init__(self, vmnum, opts):
+        super(TCPGZA, self).__init__(vmnum, opts)
 
     def remove_computed_fields(self, pkt):
         del(pkt[IP].chksum)

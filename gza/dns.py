@@ -18,8 +18,8 @@ IPTABLES_COMMAND = \
         'iptables %s FORWARD -d 192.168.%d.0/24 -m udp -p udp -j NFQUEUE --queue-num %d'
 
 class DNSGZA(GZA):
-    def __init__(self, gamestate, vmnum, opts):
-        super(DNSGZA, self).__init__(gamestate, vmnum, opts)
+    def __init__(self, vmnum, opts):
+        super(DNSGZA, self).__init__(vmnum, opts)
 
     def remove_computed_fields(self, pkt):
         """Remove UDP computed fields"""

@@ -34,9 +34,9 @@ def main():
 
     # do stuff
     if args[0] == 'dns':
-        g = DNSGZA({}, int(args[1]), options)
+        g = DNSGZA(int(args[1]), options)
     else:
-        g = TCPGZA({}, int(args[1]), options)
+        g = TCPGZA(int(args[1]), options)
     g.startgame()
 
 if __name__ == '__main__':

@@ -3,10 +3,11 @@ import nfqueue
 import socket
 import signal
 import whitelist
+from collections import defaultdict
 
 class GZA(object):
-    def __init__(self, gamestate, vmnum, opts):
-        self.gamestate = gamestate
+    def __init__(self, vmnum, opts):
+        self.gamestate = defaultdict(int)
         self.vmnum = vmnum
         self.opts = opts
         signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
