@@ -102,7 +102,10 @@ def teardown(opts):
     for i in range(1, opts.numvms + 1):
         os.system('ifconfig tap%d down' % i)
         os.system('tunctl -d tap%d' % i)
-        shutil.rmtree(os.path.join(opts.webroot, str(i)))
+        try:
+            shutil.rmtree(os.path.join(opts.webroot, str(i)))
+        except:
+            pass
 
     os.system('sysctl -w net.ipv4.ip_forward=0')
     os.system('iptables --flush')
