@@ -28,7 +28,7 @@ class DNSGZA(GZA):
         del(pkt[IP].len)
         del(pkt[UDP].len)
 
-    def nxdomain(qpkt):
+    def nxdomain(self, qpkt):
         """Returns NXDomain version of qpkt"""
         nx = qpkt.copy()
         nx[DNS].an = None
