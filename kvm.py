@@ -14,9 +14,12 @@ import os
 import shutil
 import glob
 import time
-from signal import SIGINT
+from signal import SIGINT, SIGUSR1
 from subprocess import Popen
 from optparse import OptionParser
+
+sys.path.append('wulib')
+from wulib import chunks
 
 DHCPD_CONF_PATH = 'dhcpd.conf'
 
@@ -127,6 +130,25 @@ def pcaporganize(opts):
     for pcap in pcaps:
         shutil.move(pcap, rundir)
 
+def rungames(vmlabels, games, gamelog, startgame):
+    gamepids = []
+    for vmgroup in chunks(vmlabels, len(games)):
+        for game in games:
+            # Can't terminate threads in python, so we'll fork the
+            # infinite loop in startgame and send/handle SIGINT.
+            vm = vmgroup.pop(0)
+            if game == 'none':
+                continue
+            pid = os.fork()
+            if pid == 0:
+                #sys.stdout = gamelog
+                startgame(game, vm)
+                sys.exit(0)
+
+            gamepids.append(pid)
+
+    return gamepids
+
 def main():
     """main function for standalone usage"""
     usage = "usage: %prog [options] maldir"
@@ -154,6 +176,9 @@ def main():
             help="VM image path [default: %default]")
     parser.add_option("-l", "--game-log", dest="gamelog", default="game.log",
             help="Logfile for gameplay debug output [default: %default]")
+    parser.add_option("--whitelistpath", dest="whitelistpath",
+            default="/home/yacin/drop/gza/top1000.csv",
+            help="Whitelist file to use [default: %default]")
     parser.add_option("-k", "--sample-kvm-cmd", dest="kvmcmd", default=False,
             action="store_true",
             help="Output a KVM call based on the other options (to debug)")
@@ -185,7 +210,7 @@ def main():
 
     games = options.games.split(',')
     if games == ['none']:
-        startgame = lambda x: x
+        startgame = lambda x, y: True
     else:
         sys.path.append('gza')
         from gza import startgame
@@ -202,10 +227,10 @@ def main():
         time.sleep(5)
 
         kvms = []
-        gamepids = []
         vmlabels = range(1, options.numvms + 1)
         malware = glob.glob(os.path.join(args[0], "*"))
         gamelog = open(options.gamelog, 'w')
+        gamepids = rungames(vmlabels, games, gamelog, startgame)
         # Runnin em
         while malware:
             while vmlabels:
@@ -219,15 +244,6 @@ def main():
                     i = vmlabels.pop(0)
                     installsample(options, sample, i)
                     print('Running: %s in VM #%d with game "%s"' % (sample, i, game))
-                    # Can't terminate threads in python, so we'll fork the
-                    # infinite loop in startgame and send/handle SIGINT.
-                    pid = os.fork()
-                    if pid == 0:
-                        sys.stdout = gamelog
-                        startgame(game, i)
-                        sys.exit(0)
-
-                    gamepids.append(pid)
                     kvms.append(kvm(options, i,
                         os.path.basename(sample) + '-' + game))
 
@@ -237,13 +253,14 @@ def main():
             for proc in kvms:
                 proc.terminate()
             for pid in gamepids:
-                os.kill(pid, SIGINT)
+                os.kill(pid, SIGUSR1) # Sends gamestate reset command
             del kvms[:]
-            del gamepids[:]
             vmlabels = range(1, options.numvms + 1)
             print('KVMs terminated')
             time.sleep(5)
 
+        for pid in gamepids:
+            os.kill(pid, SIGINT) # CH-CH BLAOW
         pcaporganize(options)
     except KeyboardInterrupt:
         for proc in kvms:

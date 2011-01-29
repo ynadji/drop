@@ -6,7 +6,22 @@ from dns import DNSGZA
 from tcp import TCPGZA
 from optparse import OptionParser
 
-def main():
+gameargs = {'dns1': ['--drop-n', '1', 'dns'],
+            'dnsw': ['--dropall', '--whitelist', 'dns'],
+            'tcpw': ['--dropall', '--whitelist', 'tcp'],
+            'tcp1': ['--take-n', '1', 'tcp'],
+            'tcp2': ['--take-n', '2', 'tcp'],
+            'tcp3': ['--take-n', '3', 'tcp']
+            }
+
+def startgame(game, vmnum):
+    if game == 'none':
+        return
+    args = gameargs[game]
+    args.append(str(vmnum))
+    main(arglist=args)
+
+def main(arglist=None):
     """main function for standalone usage"""
     usage = "usage: %prog [options] dns|tcp vmnum"
     parser = OptionParser(usage=usage)
@@ -26,7 +41,10 @@ def main():
             action='store_true',
             default=False, help='Print out sample iptables rule')
 
-    (options, args) = parser.parse_args()
+    if arglist is None:
+        (options, args) = parser.parse_args()
+    else:
+        (options, args) = parser.parse_args(arglist)
 
     if len(args) != 2:
         parser.print_help()
@@ -45,10 +63,13 @@ def main():
         parser.error('--take-n and --drop-n are mutually exclusive. Only use one.')
 
     # do stuff
+    print('Running %s on tap%s with options: %s' % (args[0], args[1], options))
     if args[0] == 'dns':
         g = DNSGZA(int(args[1]), options)
-    else:
+    elif args[0] == 'tcp':
         g = TCPGZA(int(args[1]), options)
+    else:
+        return 0
     g.startgame()
 
 if __name__ == '__main__':
