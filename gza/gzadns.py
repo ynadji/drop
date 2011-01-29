@@ -8,15 +8,6 @@ import nfqueue
 import socket
 from gzacommon import GZA
 
-WHITELIST_DOMAINS = ["time.windows.com."]
-seen_domains = {}
-TRIES = 1
-
-ADD = '-A'
-DEL = '-D'
-IPTABLES_COMMAND = \
-        'iptables %s FORWARD -d 192.168.%d.0/24 -m udp -p udp -j NFQUEUE --queue-num %d'
-
 class DNSGZA(GZA):
     def __init__(self, vmnum, opts):
         super(DNSGZA, self).__init__(vmnum, opts)
