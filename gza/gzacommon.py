@@ -24,6 +24,9 @@ class GZA(object):
         elif self.opts.dropall:
             self.game = 'dropall'
 
+    def makewhitelistip(self):
+        whitelist.makewhitelistip()
+
     def reset(self, signum, frame):
         sys.stderr.write('Cleared game state!\n')
         self.gamestate.clear()
