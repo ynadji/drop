@@ -22,6 +22,9 @@ def main():
             action='store_true', help='Use whitelist')
     parser.add_option('--whitelist-path', dest='whitelistpath',
             default='gza/top1000.csv', help='Whitelist to use [default: %default]')
+    parser.add_option('-i', '--iptables-rule', dest='iptables',
+            action='store_true',
+            default=False, help='Print out sample iptables rule')
 
     (options, args) = parser.parse_args()
 
@@ -31,6 +34,13 @@ def main():
     if args[0] != 'dns' and args[0] != 'tcp':
         parser.print_help()
         return 2
+    if options.iptables:
+        if args[0] == 'dns':
+            args[0] = 'udp'
+        for action in ['-A', '-D']:
+            print('iptables %s FORWARD -d 192.168.%s.0/24 -m %s -p %s -j NFQUEUE --queue-num %s'
+                    % (action, args[1], args[0], args[0], args[1]))
+        sys.exit(0)
     if options.taken >= 0 and options.dropn >= 0:
         parser.error('--take-n and --drop-n are mutually exclusive. Only use one.')
 
