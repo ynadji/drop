@@ -82,7 +82,6 @@ def setup(opts):
     for i in range(1, opts.numvms + 1):
         os.system('tunctl -u root -t tap%d' % i)
         os.system('ifconfig tap%d 192.168.%d.1 netmask 255.255.255.0 up' % (i, i))
-        nfqueue_rule(i, games)
         try:
             sampledir = os.path.join(opts.webroot, str(i))
             os.mkdir(sampledir)
@@ -93,6 +92,8 @@ def setup(opts):
     time.sleep(10)
     os.system('sysctl -w net.ipv4.ip_forward=1')
     os.system('iptables-restore < %s' % opts.iptables)
+    for i in range(1, opts.numvms + 1):
+        nfqueue_rule(i, games)
     dhcpd_start(opts)
 
 def teardown(opts):
