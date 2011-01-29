@@ -12,14 +12,16 @@ def main():
     parser = OptionParser(usage=usage)
     parser.add_option('-d', '--drop-n', dest='dropn', default=-1, action='store',
             type='int',
-            help='"Block" first n packets and accept rest (0 for all, -1 for ignore this rule) based on game type [default: %default]')
+            help='"Block" first n packets and accept rest (-1 for ignore this rule) based on game type [default: %default]')
     parser.add_option('-t', '--take-n', dest='taken', default=-1, action='store',
             type='int',
-            help='"Accept" first n packets and drop rest (0 for all, -1 for ignore this rule) based on game type [default: %default]')
+            help='"Accept" first n packets and drop rest (-1 for ignore this rule) based on game type [default: %default]')
+    parser.add_option('-a', '--dropall', dest='dropall', default=False,
+            action='store_true', help='Drop all packets')
     parser.add_option('-w', '--whitelist', dest='whitelist', default=False,
             action='store_true', help='Use whitelist')
     parser.add_option('--whitelist-path', dest='whitelistpath',
-            default='top1000.csv', help='Whitelist to use [default: %default]')
+            default='gza/top1000.csv', help='Whitelist to use [default: %default]')
 
     (options, args) = parser.parse_args()
 
