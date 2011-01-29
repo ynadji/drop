@@ -15,6 +15,14 @@ class GZA(object):
             whitelist.makewhitelist(opts.whitelistpath)
             self.whitelisted = whitelist.whitelisted
 
+        # Set the game (only used in subclass games)
+        if self.opts.taken > 0:
+            self.game = 'taken'
+        elif self.opts.dropn > 0:
+            self.game = 'dropn'
+        elif self.opts.dropall:
+            self.game = 'dropall'
+
     def reset(self, signum, frame):
         print('Cleared game state!')
         self.gamestate.clear()
