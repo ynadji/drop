@@ -4,6 +4,7 @@
 #
 
 import sys
+from dns.resolver import query, NoAnswer
 from optparse import OptionParser
 
 wl = set(['time.windows.com.',
@@ -11,11 +12,25 @@ wl = set(['time.windows.com.',
           'alexa.com.',
           'googleapis.com.'])
 
+ipwl = set([])
+
 def makewhitelist(wlpath):
     with open(wlpath) as wlin:
         global wl
         for line in wlin:
             wl.add(line.split(',')[1].rstrip() + '.') # Alexa is missed '.'
+
+def makeipwhitelist():
+    global ipwl
+    for domain in wl:
+        try:
+            for arecord in query(domain):
+                ipwl.add(arecord.to_text())
+        except NoAnswer:
+            pass
+
+def whitelistedip(ip):
+    return ip.startswith('192.168.') or ip in ipwl
 
 def whitelisted(domain):
     pieces = domain.split('.')
