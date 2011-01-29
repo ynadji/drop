@@ -13,10 +13,12 @@ sudo
 iptables
 kvm (qemu-kvm-0.12.5)
 uml-utilities -- for tunctl (and tun/tap setup)
+an http server (lighttpd)
 
 == GZA ==
 nfqueue-bindings-python (0.3)
 python-scapy (2.1.0)
+python-dnspython
 
 = License =
 Copyright (c) 2011 Yacin Nadji
