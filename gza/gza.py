@@ -2,8 +2,8 @@
 
 import sys
 from scapy.all import *
-from dns import DNSGZA
-from tcp import TCPGZA
+from gzadns import DNSGZA
+from gzatcp import TCPGZA
 from optparse import OptionParser
 
 gameargs = {'dns1': ['--drop-n', '1', 'dns'],
