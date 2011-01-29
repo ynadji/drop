@@ -20,6 +20,16 @@ IPTABLES_COMMAND = \
 class DNSGZA(GZA):
     def __init__(self, vmnum, opts):
         super(DNSGZA, self).__init__(vmnum, opts)
+        if self.game == 'taken':
+            sys.stderr.write('--take-n not implemented in %s, terminating\n'
+                    % self.__class__.__name__)
+            sys.exit(2)
+
+    def reset(self, signum, frame):
+        if self.game == 'dropn':
+            sys.stderr.write('Reset self.count in %s\n' % self.__class__.__name__)
+            self.count = self.opts.dropn
+        super(DNSGZA, self).reset(signum, frame)
 
     def remove_computed_fields(self, pkt):
         """Remove UDP computed fields"""
@@ -47,29 +57,34 @@ class DNSGZA(GZA):
         """If we have a DNS response, change it to NXDomain."""
         dns = packet[DNS]
         dnsqr = packet[DNSQR]
-
-        # whitelist
         print("Domain name: %s" % dnsqr.qname)
-        # increment count if seen
-        if dnsqr.qname in self.gamestate:
-            if self.gamestate[dnsqr.qname] == TRIES:
-                print("Seen %d times, accept" % TRIES)
+
+        # Increment for games that rely on a count of domains
+        self.gamestate[dnsqr.qname] += 1
+
+        # Handle dropall game
+        if self.game == 'dropall':
+            if self.opts.whitelist and self.whitelisted(dnsqr.qname):
                 return False
             else:
-                self.gamestate[dnsqr.qname] += 1
-
-        if dnsqr.qname in WHITELIST_DOMAINS:
-            print("Domain %s whitelisted" % dnsqr.qname)
-            return False
-        else:
-            print("Spoofing nxdomain")
-            nx = self.nxdomain(packet)
-            send(nx)
-
-            # add to self.gamestate
-            self.gamestate[dnsqr.qname] = 1
-
-            return True
+                print("Spoofing nxdomain for %s" % dnsqr.qname)
+                nx = self.nxdomain(packet)
+                send(nx)
+                return True
+        elif self.game == 'dropn':
+            # Game over, accept all from now on
+            if self.opts.dropn == 0:
+                self.spoof = lambda x, y: False
+                return False
+            else:
+                if self.whitelist and self.whitelisted(dnsqr.qname):
+                    print('%s is whitelisted' % dnsqr.qname)
+                    return False
+                self.opts.dropn -= 1
+                print("Spoofing nxdomain for %s" % dnsqr.qname)
+                nx = self.nxdomain(packet)
+                send(nx)
+                return True
 
     def playgame(self, i, payload):
         data = payload.get_data()
