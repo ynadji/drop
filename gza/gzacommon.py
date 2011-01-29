@@ -2,6 +2,7 @@ import sys
 import nfqueue
 import socket
 import signal
+import time
 import whitelist
 from collections import defaultdict
 
@@ -24,7 +25,7 @@ class GZA(object):
             self.game = 'dropall'
 
     def reset(self, signum, frame):
-        print('Cleared game state!')
+        sys.stderr.write('Cleared game state!\n')
         self.gamestate.clear()
         try:
             self.q.try_run()
@@ -37,11 +38,21 @@ class GZA(object):
         payload.set_verdict(nfqueue.NF_ACCEPT)
 
     def startgame(self):
-        self.q = nfqueue.queue()
-        self.q.open()
-        self.q.set_callback(self.playgame)
-        self.q.fast_open(self.vmnum, socket.AF_INET)
+        good = False
+        while not good:
+            try:
+                self.q = nfqueue.queue()
+                self.q.open()
+                self.q.set_callback(self.playgame)
+                self.q.fast_open(self.vmnum, socket.AF_INET)
+                good = True
+            except RuntimeError as e:
+                sys.stderr.write(str(e) + '\n')
+                sys.stderr.write('Retrying to connect to nfqueue #%d...\n'
+                        % self.vmnum)
+                time.sleep(3)
         try:
+            sys.stderr.write('Successfully bound to nfqueue #%d\n' % self.vmnum)
             self.q.try_run()
         except KeyboardInterrupt:
             print('Clean shutdown')
