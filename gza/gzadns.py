@@ -15,6 +15,8 @@ class DNSGZA(GZA):
             sys.stderr.write('--take-n not implemented in %s, terminating\n'
                     % self.__class__.__name__)
             sys.exit(2)
+        elif self.game == 'dropn':
+            self.count = self.opts.dropn
 
     def reset(self, signum, frame):
         if self.game == 'dropn':
@@ -50,32 +52,47 @@ class DNSGZA(GZA):
         dnsqr = packet[DNSQR]
         print("Domain name: %s" % dnsqr.qname)
 
+        # We ALWAYS want to ignore this. Consider the game of drop the first
+        # DNS request and let the rest through. We are trying to attack malware
+        # that's first DNS request is a C&C lookup. It'll never be windows NTP.
+        # Furthermore, if we disable the time lookup we could introduce addtnl
+        # problems due to malware noticing a clock discrepancy. To be safe,
+        # this should be a hardcoded case.
+        if dnsqr.qname == 'time.windows.com.':
+            return False
+
         # Increment for games that rely on a count of domains
         self.gamestate[dnsqr.qname] += 1
 
+        if self.opts.whitelist and self.whitelisted(dnsqr.qname):
+            print('%s is whitelisted' % dnsqr.qname)
+            return False
         # Handle dropall game
         if self.game == 'dropall':
-            if self.opts.whitelist and self.whitelisted(dnsqr.qname):
-                return False
-            else:
-                print("Spoofing nxdomain for %s" % dnsqr.qname)
-                nx = self.nxdomain(packet)
-                send(nx)
-                return True
+            print("Spoofing nxdomain for %s" % dnsqr.qname)
+            nx = self.nxdomain(packet)
+            send(nx)
+            return True
         elif self.game == 'dropn':
-            # Game over, accept all from now on
-            if self.opts.dropn == 0:
-                self.spoof = lambda x, y: False
-                return False
-            else:
-                if self.whitelist and self.whitelisted(dnsqr.qname):
-                    print('%s is whitelisted' % dnsqr.qname)
-                    return False
-                self.opts.dropn -= 1
-                print("Spoofing nxdomain for %s" % dnsqr.qname)
+            if self.gamestate['dropn'] == dnsqr.qname:
+                print("%s was a --drop-n packet, dropping" % dnsqr.qname)
                 nx = self.nxdomain(packet)
                 send(nx)
                 return True
+            # Game over, accept all from now on
+            elif self.count == 0:
+                print('--dropn game over!')
+                return False
+            else:
+                self.count -= 1
+                print("Spoofing nxdomain for %s" % dnsqr.qname)
+                self.gamestate['dropn'] = dnsqr.qname
+                nx = self.nxdomain(packet)
+                send(nx)
+                return True
+
+        print('Fell through game ifelif chain, accepting')
+        return True
 
     def playgame(self, i, payload):
         data = payload.get_data()
