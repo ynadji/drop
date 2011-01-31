@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 
+#
 # Extract unique domains from a PCAP dump.
 
 import re
@@ -27,18 +27,18 @@ def private_ip(ip):
   return ip.startswith("192.168.") or ip.startswith("10.") or re.match("172\.([1-2][0-9]|3[01])", ip) \
           or ip == "0.0.0.0" or ip == "255.255.255.255"
 
-def unique_ips(pcap, parse_all):
+def unique_ips(pcap, parse_all=False):
   """Extract and print unique IPs queried in file 'pcap'."""
   pkts = rdpcap(pcap)
 
   ip_pkts = pkts.filter(lambda x: x.haslayer(IP))
-  unique_ips = set()
+  ips = set()
 
   for pkt in ip_pkts:
       if not private_ip(pkt[IP].src):
-          unique_ips.add(pkt[IP].src)
+          ips.add(pkt[IP].src)
       if not private_ip(pkt[IP].dst):
-          unique_ips.add(pkt[IP].dst)
+          ips.add(pkt[IP].dst)
 
   # get extra, unused IPs from DNS
   if parse_all:
@@ -48,15 +48,14 @@ def unique_ips(pcap, parse_all):
           records = layer_to_list(pkt[DNSRR])
           for rr in records:
               if re.match("[\d\.]+", rr.rdata):
-                  unique_ips.add(rr.rdata)
+                  ips.add(rr.rdata)
 
-  for ip in sorted(unique_ips):
-      print ip
+  return ips
 
 if __name__ == '__main__':
     usage = "usage: %prog [options] pcap-file"
     parser = OptionParser(usage=usage)
-    parser.add_option("-a", "--all", action="store_true", dest="all", default=False, 
+    parser.add_option("-a", "--all", action="store_true", dest="all", default=False,
             help="Display ALL IPs (i.e., IPs retrieved but never used, like IPs returned by a DNS query)")
 
     (options, args) = parser.parse_args()
@@ -65,4 +64,6 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(1)
     else:
-        unique_ips(args[0], options.all)
+        ips = unique_ips(args[0], options.all)
+        for ip in sorted(ips):
+            print(ip)
