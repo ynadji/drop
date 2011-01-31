@@ -13,8 +13,10 @@ class GZA(object):
         self.opts = opts
         signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
         if self.opts.whitelist:
-            whitelist.makewhitelist(opts.whitelistpath)
+            whitelist.makewhitelist(self.opts.whitelistpath)
             self.whitelisted = whitelist.whitelisted
+            whitelist.makeipwhitelist(self.opts.ipwhitelistpath)
+            self.whitelistedip = whitelist.whitelistedip
 
         # Set the game (only used in subclass games)
         if self.opts.taken > 0:
@@ -23,9 +25,6 @@ class GZA(object):
             self.game = 'dropn'
         elif self.opts.dropall:
             self.game = 'dropall'
-
-    def makewhitelistip(self):
-        whitelist.makewhitelistip()
 
     def reset(self, signum, frame):
         sys.stderr.write('Cleared game state!\n')

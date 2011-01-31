@@ -37,6 +37,8 @@ def main(arglist=None):
             action='store_true', help='Use whitelist')
     parser.add_option('--whitelist-path', dest='whitelistpath',
             default='gza/top1000.csv', help='Whitelist to use [default: %default]')
+    parser.add_option('--ip-whitelist-path', dest='ipwhitelistpath',
+            default='gza/generic-dnswl', help='Whitelist to use [default: %default]')
     parser.add_option('-i', '--iptables-rule', dest='iptables',
             action='store_true',
             default=False, help='Print out sample iptables rule')
