@@ -2,7 +2,7 @@
 # dnswl.org export in generic format
 # Exported at 2011-01-31 15:21:31 with /home/jobs/bin-pg//export-generic.pl
 # Format: IP/mask;category;score;name;dnswl id
-# Certain restrictions for usage and distribution 
+# Certain restrictions for usage and distribution
 # apply, see http://www.dnswl.org/license
 1.85.0.189/32;11;none;snnu.edu.cn;22986
 2.104.223.10/32;6;hi;junc.org;3697
@@ -72690,6 +72690,13 @@
 223.165.24.78/31;9;low;indiatimes.com;22332
 223.165.24.105/32;9;low;indiatimes.com;22332
 223.165.24.172/31;9;low;indiatimes.com;22332
+74.125.47.105/32;1;low;google.com;99999
+74.125.47.99/32;1;low;google.com;99999
+74.125.47.106/32;1;low;google.com;99999
+74.125.47.103/32;1;low;google.com;99999
+74.125.47.147/32;1;low;google.com;99999
+74.125.47.104/32;1;low;google.com;99999
+207.46.232.182/32;1;low;time.windows.com;99999
 
 # Number of rows in DB: 105026
 # Number of rows after aggregation: 72686
