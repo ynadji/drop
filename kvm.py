@@ -209,11 +209,8 @@ def main():
         pass
 
     games = options.games.split(',')
-    if games == ['none']:
-        startgame = lambda x, y: True
-    else:
-        sys.path.append('gza')
-        from gza import startgame
+    sys.path.append('gza')
+    from gza import startgame
 
     mod = options.numvms % len(games)
     if mod != 0:
