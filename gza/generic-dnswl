@@ -72696,7 +72696,9 @@
 74.125.47.103/32;1;low;google.com;99999
 74.125.47.147/32;1;low;google.com;99999
 74.125.47.104/32;1;low;google.com;99999
+74.125.45.104/32;1;low;google.com;99999
 207.46.232.182/32;1;low;time.windows.com;99999
+66.220.149.11/32;9;low;facebook.com;4056
 
 # Number of rows in DB: 105026
 # Number of rows after aggregation: 72686
