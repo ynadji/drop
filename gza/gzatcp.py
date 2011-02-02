@@ -53,7 +53,7 @@ class TCPGZA(GZA):
     def spoof(self, packet):
         """Spoof TCP streams with TCP RST"""
         src_ip = packet[IP].src
-        print("IP address: %s" % src_ip)
+        print("%s: IP address: %s" % (self.iface, src_ip))
 
         # IP for time.windows.com. See gzadns.py to see why this requires its
         # own separate "whitelist".
