@@ -10,7 +10,9 @@ class GZA(object):
     def __init__(self, vmnum, opts):
         self.gamestate = defaultdict(int)
         self.vmnum = vmnum
+        self.iface = 'tap%d' % vmnum
         self.opts = opts
+        self.mac = 'ca:fe:de:ad:be:ef'
         signal.signal(signal.SIGUSR1, self.reset) # So we can reset gamestate
         if self.opts.whitelist:
             whitelist.makewhitelist(self.opts.whitelistpath)

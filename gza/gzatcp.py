@@ -35,7 +35,7 @@ class TCPGZA(GZA):
         p[TCP].flags = 0x16
         self.remove_computed_fields(p)
 
-        return p
+        return Ether(dst=self.mac)/p
 
     def reset(self, signum, frame):
         if self.game == 'taken':
@@ -44,9 +44,9 @@ class TCPGZA(GZA):
         super(TCPGZA, self).reset(signum, frame)
 
     def forge(self, packet):
-        print('TCP RST for %s' % packet[IP].src)
+        print('TCP RST for %s on %s' % (packet[IP].src, self.iface))
         p = self.rst(packet)
-        send(p)
+        sendp(p, iface=self.iface)
         return True
 
     # spoof function

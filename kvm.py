@@ -50,9 +50,10 @@ def dhcpd_stop():
 def kvmmakeargs(opts, num, name):
     return ['kvm', '-usbdevice', 'tablet', '-snapshot',
             '-hda', '%s' % opts.vmimage,'-vnc', ':%d' % num,
-            '-net', 'nic,vlan=%d' % num, '-net',
+            '-net', 'nic,vlan=%d,macaddr=ca:fe:de:ad:be:ef' % num, '-net',
             'dump,vlan=%d,file=%s/%s.pcap' % (num, opts.tcpdump, name),
-            '-net', 'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' % (num, num)]
+            '-net', 'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' %
+            (num, num)]
 
 def kvm(opts, num, name):
     args = kvmmakeargs(opts, num, name)

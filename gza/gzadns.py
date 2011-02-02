@@ -43,7 +43,7 @@ class DNSGZA(GZA):
         nx[DNS].rcode = "name-error"
         self.remove_computed_fields(nx)
 
-        return nx
+        return Ether(dst=self.mac)/nx
 
     # spoof function
     def spoof(self, packet):
@@ -69,15 +69,15 @@ class DNSGZA(GZA):
             return False
         # Handle dropall game
         if self.game == 'dropall':
-            print("Spoofing nxdomain for %s" % dnsqr.qname)
+            print("Spoofing nxdomain for %s on iface %s" % (dnsqr.qname, self.iface))
             nx = self.nxdomain(packet)
-            send(nx)
+            sendp(nx, iface=self.iface)
             return True
         elif self.game == 'dropn':
             if self.gamestate['dropn'] == dnsqr.qname:
                 print("%s was a --drop-n packet, dropping" % dnsqr.qname)
                 nx = self.nxdomain(packet)
-                send(nx)
+                sendp(nx, iface=self.iface)
                 return True
             # Game over, accept all from now on
             elif self.count == 0:
@@ -88,7 +88,7 @@ class DNSGZA(GZA):
                 print("Spoofing nxdomain for %s" % dnsqr.qname)
                 self.gamestate['dropn'] = dnsqr.qname
                 nx = self.nxdomain(packet)
-                send(nx)
+                sendp(nx, iface=self.iface)
                 return True
 
         print('Fell through game ifelif chain, accepting')
