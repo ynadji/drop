@@ -254,12 +254,12 @@ def main():
             print('Terminating KVMs...')
             for proc in kvms:
                 proc.terminate()
-            for pid in gamepids:
-                os.kill(pid, SIGUSR1) # Sends gamestate reset command
             del kvms[:]
             vmlabels = range(1, options.numvms + 1)
             print('KVMs terminated')
-            time.sleep(5)
+            time.sleep(10)
+            for pid in gamepids:
+                os.kill(pid, SIGUSR1) # Sends gamestate reset command
 
         for pid in gamepids:
             os.kill(pid, SIGINT) # CH-CH BLAOW
