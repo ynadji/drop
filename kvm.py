@@ -75,6 +75,8 @@ def nfqueue_rule(i, games):
         sys.stderr.write('Unknown nfqueue rule for game %s\n' % game)
         return
 
+    os.system('iptables -A FORWARD -d 192.168.%d.0/24 -m %s -p %s -j LOG'
+                    % (i, transporttype, transporttype))
     os.system('iptables -A FORWARD -d 192.168.%d.0/24 -m %s -p %s -j NFQUEUE --queue-num %d'
                     % (i, transporttype, transporttype, i))
 
