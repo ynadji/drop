@@ -228,6 +228,7 @@ def main():
         malware = glob.glob(os.path.join(args[0], "*"))
         gamelog = open(options.gamelog, 'w')
         gamepids = rungames(vmlabels, games, gamelog, startgame)
+        time.sleep(10)
         # Runnin em
         while malware:
             while vmlabels:
@@ -243,6 +244,7 @@ def main():
                     print('Running: %s in VM #%d with game "%s"' % (sample, i, game))
                     kvms.append(kvm(options, i,
                         os.path.basename(sample) + '-' + game))
+                    time.sleep(0.5)
 
             print('Sleeping for %d seconds...' % options.runtime)
             time.sleep(options.runtime)
