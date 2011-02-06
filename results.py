@@ -21,33 +21,36 @@ def notwhitelistedip(ip):
     return not whitelist.whitelistedip(ip)
 
 def run((pcap, options)):
-    # do stuff
-    games = options.games.split(',')
-    md5 = os.path.basename(pcap)[:36]
-    md5res = []
-    ipres = []
-    for game in games:
-        pcapfile = os.path.realpath(os.path.join(options.dir, md5) + '-' + game + '.pcap')
-        uniqdomains, uniqips = domainsandips(pcapfile)
-        if options.whitelist:
-            uniqdomains = filter(notwhitelisted, uniqdomains)
-            uniqips = filter(notwhitelistedip, uniqips)
-        md5res.append(uniqdomains)
-        ipres.append(uniqips)
+    try:
+        # do stuff
+        games = options.games.split(',')
+        md5 = os.path.basename(pcap)[:36]
+        md5res = []
+        ipres = []
+        for game in games:
+            pcapfile = os.path.realpath(os.path.join(options.dir, md5) + '-' + game + '.pcap')
+            uniqdomains, uniqips = domainsandips(pcapfile)
+            if options.whitelist:
+                uniqdomains = filter(notwhitelisted, uniqdomains)
+                uniqips = filter(notwhitelistedip, uniqips)
+            md5res.append(uniqdomains)
+            ipres.append(uniqips)
 
-    res = []
-    domaincounts = [str(len(x)) for x in md5res]
-    domainstrs = [','.join(domains) for domains in md5res]
-    ipcounts = [str(len(x)) for x in ipres]
-    ipstrs = [','.join(ips) for ips in ipres]
+        res = []
+        domaincounts = [str(len(x)) for x in md5res]
+        domainstrs = [','.join(domains) for domains in md5res]
+        ipcounts = [str(len(x)) for x in ipres]
+        ipstrs = [','.join(ips) for ips in ipres]
 
-    for i in range(len(ipstrs)):
-        res.append(ipcounts[i])
-        res.append(ipstrs[i])
-        res.append(domaincounts[i])
-        res.append(domainstrs[i])
-    res.insert(0, md5)
-    return '\t'.join(res)
+        for i in range(len(ipstrs)):
+            res.append(ipcounts[i])
+            res.append(ipstrs[i])
+            res.append(domaincounts[i])
+            res.append(domainstrs[i])
+        res.insert(0, md5)
+        return '\t'.join(res)
+    except KeyboardInterrupt as e:
+        return 'User interrupt!'
 
 def main():
     """main function for standalone usage"""
@@ -83,12 +86,16 @@ def main():
         headers.append(g + 'domains')
 
     print('md5\t' + '\t'.join(headers))
-    p = Pool(cpu_count())
 
-    pcaps = glob.glob(os.path.join(args[0], '*.pcap'))
-    res_it = p.imap_unordered(run, izip(pcaps, repeat(options)), 100)
-    for res in res_it:
-        print(res)
+    try:
+        p = Pool(cpu_count())
+        pcaps = glob.glob(os.path.join(args[0], '*.pcap'))
+        res_it = p.imap_unordered(run, izip(pcaps, repeat(options)), 100)
+        for res in res_it:
+            print(res)
+    except KeyboardInterrupt as e:
+        sys.stderr.write('User termination!\n')
+        p.terminate()
 
 if __name__ == '__main__':
     sys.exit(main())
