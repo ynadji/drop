@@ -7,8 +7,7 @@ from optparse import OptionParser
 from itertools import chain, izip, repeat
 
 sys.path.append('gza')
-import ud
-import uip
+from domainsandips import domainsandips
 import whitelist
 from multiprocessing import Pool, cpu_count
 
@@ -29,12 +28,12 @@ def run((pcap, options)):
     ipres = []
     for game in games:
         pcapfile = os.path.realpath(os.path.join(options.dir, md5) + '-' + game + '.pcap')
-        md5res.append(ud.unique_domains(pcapfile))
-        ipres.append(uip.unique_ips(pcapfile))
-        # This KILLED performance. Looking up 5000+ IPs in the whitelist
-        # is slow as balls.
-        # md5res.append(filter(notwhitelisted, ud.unique_domains(pcapfile)))
-        # ipres.append(filter(notwhitelistedip, uip.unique_ips(pcapfile)))
+        uniqdomains, uniqips = domainsandips(pcapfile)
+        if options.whitelist:
+            uniqdomains = filter(notwhitelisted, uniqdomains)
+            uniqips = filter(notwhitelistedip, uniqips)
+        md5res.append(uniqdomains)
+        ipres.append(uniqips)
 
     res = []
     domaincounts = [str(len(x)) for x in md5res]
@@ -56,9 +55,11 @@ def main():
     parser = OptionParser(usage=usage)
     parser.add_option("-g", "--games", dest="games", default="none",
             help="Games to analyze (comma separated list of: none,dns,dns5)")
-    parser.add_option("-w", "--whitelist", dest="whitelist", default="gza/top1000.csv",
+    parser.add_option("-w", "--whitelist", dest="whitelist", default=False,
+            action='store_true', help="Use whitelist")
+    parser.add_option("-p", "--whitelistpath", default="gza/top1000.csv",
             help="Whitelist Alexa CSV to use [default: %default]")
-    parser.add_option("-i", "--ipwhitelist", dest="ipwhitelist", default="gza/generic-dnswl",
+    parser.add_option("-i", "--ipwhitelistpath", default="gza/generic-dnswl",
             help="IP whitelist to use [default: %default]")
 
     (options, args) = parser.parse_args()
@@ -68,8 +69,9 @@ def main():
         return 2
 
     options.dir = args[0]
-    whitelist.makewhitelist(options.whitelist)
-    whitelist.makeipwhitelist(options.ipwhitelist)
+    if options.whitelist:
+        whitelist.makewhitelist(options.whitelistpath)
+        whitelist.makeipwhitelist(options.ipwhitelistpath)
 
     # Print header
     games = options.games.split(',')
