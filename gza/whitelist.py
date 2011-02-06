@@ -26,17 +26,14 @@ def makeipwhitelist(wlpath):
         for line in wlin:
             if line.startswith('#') or line == '\n':
                 continue
-            ipwl.add(IP(line.split(';')[0]))
+            for ip in IP(line.split(';')[0]):
+                ipwl.add(long(ip.strDec()))
 
 def whitelistedip(ip):
     if ip.startswith('192.168.'):
         return True
-    addr = IP(ip)
-    for network in ipwl:
-        if addr in network:
-            return True
-
-    return False
+    addr = long(IP(ip).strDec())
+    return addr in ipwl
 
 def whitelisted(domain):
     pieces = domain.split('.')
