@@ -15,14 +15,17 @@ def domainsandips(pcappath):
     for _, data in pcap:
         eth = Ethernet(data)
         ip = eth.data
+        trans = ip.data
 
         try:
             ips.add(socket.inet_ntoa(ip.src))
             ips.add(socket.inet_ntoa(ip.dst))
 
-            dns = dpkt.dns.DNS(ip.data.data)
-            for query in dns.qd:
-                domains.add(query.name)
+            if type(trans) == dpkt.udp.UDP and \
+                    (trans.sport == 53 or trans.dport == 53):
+                dns = dpkt.dns.DNS(ip.data.data)
+                for query in dns.qd:
+                    domains.add(query.name)
         except Exception as e:
             pass
 
