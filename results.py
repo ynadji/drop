@@ -3,6 +3,7 @@
 import sys
 import glob
 import os
+import re
 from optparse import OptionParser
 from itertools import chain, izip, repeat
 
@@ -10,6 +11,9 @@ sys.path.append('gza')
 from domainsandips import domainsandips
 import whitelist
 from multiprocessing import Pool, cpu_count
+
+sys.path.append('wulib')
+import wulib as wu
 
 def intersperse(lst1, lst2):
     return chain.from_iterable(izip(lst1, lst2))
@@ -20,11 +24,11 @@ def notwhitelisted(domain):
 def notwhitelistedip(ip):
     return not whitelist.whitelistedip(ip)
 
-def run((pcap, options)):
+def run((md5, options)):
     try:
         # do stuff
         games = options.games.split(',')
-        md5 = os.path.basename(pcap)[:36]
+        md5 = md5 + '.exe'
         md5res = []
         ipres = []
         for game in games:
@@ -90,7 +94,10 @@ def main():
     try:
         p = Pool(cpu_count())
         pcaps = glob.glob(os.path.join(args[0], '*.pcap'))
-        res_it = p.imap_unordered(run, izip(pcaps, repeat(options)), 100)
+        # Only send the MD5s
+        r = re.compile('([0-9a-fA-F]{32})\.exe')
+        md5s = wu.unique([re.search(r, x).group(1) for x in pcaps])
+        res_it = p.imap_unordered(run, izip(md5s, repeat(options)), 100)
         for res in res_it:
             print(res)
     except KeyboardInterrupt as e:
