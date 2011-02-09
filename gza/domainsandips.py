@@ -6,6 +6,7 @@ import dpkt
 from dpkt.pcap import Reader
 from dpkt.ethernet import Ethernet
 from optparse import OptionParser
+from encodings.idna import ToASCII as asciify
 
 def domainsandips(pcappath):
     domains = set([])
@@ -25,7 +26,10 @@ def domainsandips(pcappath):
                     (trans.sport == 53 or trans.dport == 53):
                 dns = dpkt.dns.DNS(ip.data.data)
                 for query in dns.qd:
-                    domains.add(query.name)
+                    # asciify is the standard for normalizing domains
+                    # to ascii. Also we don't want any tab characters to
+                    # fuck up our R script.
+                    domains.add(asciify(query.name).replace('\t', ''))
         except Exception as e:
             pass
 
