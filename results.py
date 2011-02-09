@@ -33,7 +33,7 @@ def run((md5, options)):
         ipres = []
         for game in games:
             pcapfile = os.path.realpath(os.path.join(options.dir, md5) + '-' + game + '.pcap')
-            uniqdomains, uniqips = domainsandips(pcapfile)
+            uniqdomains, uniqips = domainsandips(pcapfile, allips=options.allips)
             if options.whitelist:
                 uniqdomains = filter(notwhitelisted, uniqdomains)
                 uniqips = filter(notwhitelistedip, uniqips)
@@ -68,6 +68,9 @@ def main():
             help="Whitelist Alexa CSV to use [default: %default]")
     parser.add_option("-i", "--ipwhitelistpath", default="gza/generic-dnswl",
             help="IP whitelist to use [default: %default]")
+    parser.add_option('-a', '--all-ips', dest='allips', default=False,
+                      action='store_true',
+                      help='Pull unused IPs from A records [default: %default]')
 
     (options, args) = parser.parse_args()
 

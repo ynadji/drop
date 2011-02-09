@@ -8,7 +8,7 @@ from dpkt.ethernet import Ethernet
 from optparse import OptionParser
 from encodings.idna import ToASCII as asciify
 
-def domainsandips(pcappath):
+def domainsandips(pcappath, allips=False):
     domains = set([])
     ips = set([])
 
@@ -30,6 +30,12 @@ def domainsandips(pcappath):
                     # to ascii. Also we don't want any tab characters to
                     # fuck up our R script.
                     domains.add(asciify(query.name).replace('\t', ''))
+                if allips:
+                    for answer in dns.an:
+                        try:
+                            ips.add(socket.inet_ntoa(answer.rdata))
+                        except socket.error as e:
+                            pass
         except Exception as e:
             pass
 
@@ -39,6 +45,8 @@ def main():
     """main function for standalone usage"""
     usage = "usage: %prog [options] pcap"
     parser = OptionParser(usage=usage)
+    parser.add_option('-a', '--all-ips', default=False, action='store_true',
+                      dest='allips')
 
     (options, args) = parser.parse_args()
 
@@ -47,7 +55,7 @@ def main():
         return 2
 
     # do stuff
-    (domains, ips) = domainsandips(args[0])
+    (domains, ips) = domainsandips(args[0], allips=options.allips)
     for domain in domains:
         print(domain)
     for ip in ips:
