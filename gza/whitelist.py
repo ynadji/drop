@@ -7,6 +7,9 @@ import sys
 from IPy import IP
 from optparse import OptionParser
 
+LOWER172 = 2886729728
+UPPER172 = 2887778303
+
 wl = set(['time.windows.com.',
           'ntp.org.',
           'alexa.com.',
@@ -30,9 +33,11 @@ def makeipwhitelist(wlpath):
                 ipwl.add(long(ip.strDec()))
 
 def whitelistedip(ip):
-    if ip.startswith('192.168.'):
-        return True
     addr = long(IP(ip).strDec())
+
+    if ip.startswith('192.168.') or ip.startswith('10.') or \
+            (addr >= LOWER172 and addr <= UPPER172):
+        return True
     return addr in ipwl
 
 def whitelisted(domain):
