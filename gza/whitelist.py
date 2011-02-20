@@ -37,6 +37,10 @@ def whitelistedip(ip):
 
 def whitelisted(domain):
     pieces = domain.split('.')
+    # This happens if the domain name is missing its terminating '.'; add it
+    # back if that's the case.
+    if pieces[-1] != '':
+        pieces.append('')
     for i in range(len(pieces) - 2):
         if '.'.join(pieces[i:]) in wl:
             return True
