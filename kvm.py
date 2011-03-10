@@ -221,6 +221,12 @@ def main():
         sys.stderr.write('Cannot evenly distribute concurrent VMs, only using %d VMs.\n'
                 % options.numvms)
 
+    options.tcpdump = os.path.join(options.tcpdump, time.strftime('%Y%m%d-%H:%M:%S'))
+    try:
+        os.mkdir(options.tcpdump)
+    except OSError:
+        pass
+
     try:
         # Run them VMs!
         setup(options)
@@ -263,7 +269,7 @@ def main():
 
         for pid in gamepids:
             os.kill(pid, SIGINT) # CH-CH BLAOW
-        pcaporganize(options)
+        #pcaporganize(options)
     except KeyboardInterrupt:
         for proc in kvms:
             proc.terminate()
