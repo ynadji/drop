@@ -6,7 +6,7 @@ from gzadns import DNSGZA
 from gzatcp import TCPGZA
 from optparse import OptionParser
 
-gameargs = {'dns1': ['--drop-n', '1', 'dns'],
+gameargs = {'dns1': ['--take-n', '1', 'dns'],
             'dnsw': ['--dropall', '--whitelist', 'dns'],
             'tcpw': ['--dropall', '--whitelist', 'tcp'],
             'tcp1': ['--take-n', '1', 'tcp'],
