@@ -46,7 +46,12 @@ def main():
                 line = line[2:]
             if inlist:
                 # Looks like: 2L, 1L, 4L, 8L,
-                gains.extend(map(long, re.sub(r'\s+', '', line)[:-1].split(',')))
+                try:
+                    gains.extend(map(long, re.sub(r'\s+', '', line)[:-1].split(',')))
+                except ValueError:
+                    sys.stderr.write('map failed, if line isnt just ")", you have a problem\n')
+                    sys.stderr.write('line: %s\n' % line)
+                    inlist = False
             if line.endswith('L)'):
                 inlist = False
                 #print('Gains:', gains)
