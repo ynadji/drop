@@ -19,6 +19,14 @@ an http server (lighttpd)
 nfqueue-bindings-python (0.3)
 python-scapy (2.1.0)
 python-dnspython
+python-ipy
+
+== Results Generation ==
+r-base-core
+python-dpkt
+
+You can install everything with the following command:
+$ sudo apt-get install isc-dhcp-server iptables kvm uml-uilities lighttpd nfqueue-bindings-python python-scapy python-dnspython python-ipy r-base-core python-dpkt
 
 = License =
 Copyright (c) 2011 Yacin Nadji

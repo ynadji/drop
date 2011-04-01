@@ -80,8 +80,8 @@ class TCPGZA(GZA):
                         % self.count)
                 return False
 
-        print('Fell through game ifelif chain, accepting')
-        return True
+        print('Fell through game ifelif chain, do not spoof')
+        return False
 
     def playgame(self, i, payload):
         """docstring for main"""
