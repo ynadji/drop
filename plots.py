@@ -54,8 +54,6 @@ def main():
                     inlist = False
             if line.endswith('L)'):
                 inlist = False
-                #print('Gains:', gains)
-                #print('Expgame: %s, controlgame: %s' % (expgame, controlgame))
                 if 'dns' in expgame and 'domaincount' in controlgame:
                     dnsgames.append(gains)
                     dnsnames.append(expgame)
@@ -64,11 +62,6 @@ def main():
                     tcpnames.append(expgame)
 
                 gains = []
-
-    #print(repr(dnsgames))
-    #print(repr(tcpgames))
-    #print(repr(dnsnames))
-    #print(repr(tcpnames))
 
     # Thank you color brewer (http://colorbrewer2.org/)
     dnscolors = ['#1B9E77', '#D95F02'][:len(dnsgames)]
@@ -105,4 +98,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
