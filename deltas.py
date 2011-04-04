@@ -33,6 +33,12 @@ import numpy as np
 sys.path.append('wulib')
 from wulib import flatten, unique
 
+def parentdomain(fqdn, n):
+    return '.'.join(fqdn.split('.')[n:])
+
+def minusoneld(fqdn):
+    return parentdomain(fqdn, 1)
+
 def deserialize(md5, noneipcount, noneips, nonedomaincount, nonedomains, dnswipcount, dnswips, dnswdomaincount, dnswdomains, tcpwipcount, tcpwips, tcpwdomaincount, tcpwdomains):
     # Make ints
     noneipcount = int(noneipcount)
@@ -54,7 +60,7 @@ def deserialize(md5, noneipcount, noneips, nonedomaincount, nonedomains, dnswipc
 
     return (md5, noneipcount, noneips, nonedomaincount, nonedomains, dnswipcount, dnswips, dnswdomaincount, dnswdomains, tcpwipcount, tcpwips, tcpwdomaincount, tcpwdomains)
 
-def deltas(conn, gameinfo, vanillainfo, date, ip=False):
+def deltas(conn, gameinfo, vanillainfo, date, opts, ip=False):
     gameinfo = set(gameinfo)
     vanillainfo = set(vanillainfo)
     c = conn.cursor()
@@ -69,7 +75,10 @@ def deltas(conn, gameinfo, vanillainfo, date, ip=False):
         if ip:
             q = "SELECT fdate, ldate FROM label_ip WHERE ip = '%s'" % ipordomain
         else:
-            q = "SELECT fdate, ldate FROM label_zones WHERE dn = '%s'" % ipordomain
+            if opts.parent_zone:
+                q = "SELECT fdate, ldate FROM label_zones WHERE dn = '%s'" % minusoneld(ipordomain)
+            else:
+                q = "SELECT fdate, ldate FROM label_zones WHERE dn = '%s'" % ipordomain
         c.execute(q)
         try:
             fdate, ldate = c.fetchone()
@@ -103,6 +112,8 @@ def main():
     parser = OptionParser(usage=usage)
     parser.add_option('-g', '--games', default='none,dnsw,tcpw',
             help='Games played in the results file [default: %default]')
+    parser.add_option('-p', '--parent-zone', default=False, action='store_true',
+            help='Look up parent zone, rather than fqdn (mail.google.com, lookup google.com).')
 
     (options, args) = parser.parse_args()
 
@@ -129,11 +140,11 @@ def main():
 
             # tcpw won
             if tcpwipcount > noneipcount:
-                alltcpresults.append(deltas(conn, tcpwips, noneips, date, ip=True))
+                alltcpresults.append(deltas(conn, tcpwips, noneips, date, options, ip=True))
 
             # dnsw won
             if dnswdomaincount > nonedomaincount:
-                alldnsresults.append(deltas(conn, dnswdomains, nonedomains, date))
+                alldnsresults.append(deltas(conn, dnswdomains, nonedomains, date, options))
 
     dnsdaygains, dnsdecoms, dnsincampaign, dnsnevers = zip(*alldnsresults)
     tcpdaygains, tcpdecoms, tcpincampaign, tcpnevers = zip(*alltcpresults)
