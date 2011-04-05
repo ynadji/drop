@@ -7,6 +7,9 @@ import sys
 import re
 from optparse import OptionParser
 
+sys.path.append('wulib')
+from wulib import frequency
+
 def main():
     """main function for standalone usage"""
     usage = "usage: %prog [options] results.tab"
@@ -64,16 +67,20 @@ def main():
                 gains = []
 
     # Thank you color brewer (http://colorbrewer2.org/)
-    dnscolors = ['#1B9E77', '#D95F02'][:len(dnsgames)]
-    tcpcolors = ['#7570B3', '#E7298A', '#66A61E', '#E6AB02'][:len(tcpgames)]
+    dnscolors = ['-r+', '-bx'][:len(dnsgames)]
+    tcpcolors = ['-r+', '-bx', '-g*', '-k'][:len(tcpgames)]
 
     dnsnames = ['$G_{\mathrm{%s}}$' % x[:4] for x in dnsnames]
     tcpnames = ['$G_{\mathrm{%s}}$' % x[:4] for x in tcpnames]
 
-    plt.subplot(211)
+    #plt.subplot(211)
+    fig = plt.figure()
+    ax = fig.add_subplot(211)
+    ax.set_yscale('log')
     for game, color, name in zip(tcpgames, tcpcolors, tcpnames):
-        n, bins, patches = plt.hist(game, len(game), facecolor=color, alpha=0.75, range=(1, 60), label=name)
-    #n, bins, patches = plt.hist(tcpgames, len(max(tcpgames, key=len)), color=tcpcolors, range=(1, 60), label=tcpnames)
+        numaddtl, counts = frequency(game)
+        ax.plot(numaddtl, counts, color, label=name)
+        #n, bins, patches = plt.hist(game, len(game), facecolor=color, alpha=0.75, range=(1, 60), label=name)
     # Not sure why the commented-out line above doesn't work. It's treating the list of colors as a single
     # color value, rather than the color for each entry.
 
@@ -82,9 +89,12 @@ def main():
     plt.xlabel('(a) Raw increase in IP addresses')
     plt.legend()
 
-    plt.subplot(212)
+    ax = fig.add_subplot(212)
+    ax.set_yscale('log')
     for game, color, name in zip(dnsgames, dnscolors, dnsnames):
-        n, bins, patches = plt.hist(game, len(game), facecolor=color, alpha=0.75, range=(1, 60), label=name)
+        numaddtl, counts = frequency(game)
+        ax.plot(numaddtl, counts, color, label=name)
+        #n, bins, patches = plt.hist(game, len(game), facecolor=color, alpha=0.75, range=(1, 60), label=name)
 
     plt.grid(True)
     plt.ylabel('Frequency of samples')
