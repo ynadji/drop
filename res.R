@@ -42,6 +42,10 @@ main <- function(file, games) {
   # as.is=TRUE reads in strings as strings (instead of factors). we need this
   # so we can split on ',' to get and idea of the new domains we saw.
   ds <- read.table(file, header=TRUE, row.names=1, sep='\t', as.is=TRUE)
+  withdomains <- subset(ds, nonedomaincount > 0)
+  withips <- subset(ds, noneipcount > 0)
+  witheither <- subset(ds, noneipcount > 0 | nonedomaincount > 0)
+
   for(game in games) {
     colname <- paste(game, "domaincount", sep="")
     res <- gains(ds, "nonedomaincount", colname)
@@ -51,7 +55,7 @@ main <- function(file, games) {
     print("Domain values:")
     dput(res$Gains[, 1])
     #print(table(res$Gains))
-    print(paste(res$Count, "/", nrow(ds), ":", res$Count/nrow(ds)))
+    print(paste(res$Count, "/", nrow(withdomains), ":", res$Count/nrow(withdomains)))
 
     colname <- paste(game, "ipcount", sep="")
     res <- gains(ds, "noneipcount", colname)
@@ -61,7 +65,7 @@ main <- function(file, games) {
     print("IP values:")
     dput(res$Gains[, 1])
     #print(table(res$Gains))
-    print(paste(res$Count, "/", nrow(ds), ":", res$Count/nrow(ds)))
+    print(paste(res$Count, "/", nrow(withips), ":", res$Count/nrow(withips)))
   }
 
   print("Overall:")
@@ -77,7 +81,7 @@ main <- function(file, games) {
     overall <- subset(ds, (dnswdomaincount > nonedomaincount & dnswdomaincount < 100) |
                           (tcpwipcount > noneipcount & tcpwipcount < 100))
   }
-  print(paste(nrow(overall), "/", nrow(ds), ":", nrow(overall)/nrow(ds)))
+  print(paste(nrow(overall), "/", nrow(witheither), ":", nrow(overall)/nrow(witheither)))
   print("Overlap:")
   for (g1 in games) {
     if (istcp(g1)) {
