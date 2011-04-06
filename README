@@ -14,6 +14,7 @@ iptables
 kvm (qemu-kvm-0.12.5)
 uml-utilities -- for tunctl (and tun/tap setup)
 an http server (lighttpd)
+tcpdump
 
 == GZA ==
 nfqueue-bindings-python (0.3)
@@ -26,7 +27,15 @@ r-base-core
 python-dpkt
 
 You can install everything with the following command:
-$ sudo apt-get install isc-dhcp-server iptables kvm uml-uilities lighttpd nfqueue-bindings-python python-scapy python-dnspython python-ipy r-base-core python-dpkt
+$ sudo apt-get install isc-dhcp-server iptables kvm uml-uilities lighttpd nfqueue-bindings-python python-scapy python-dnspython python-ipy r-base-core python-dpkt tcpdump
+
+= Installation =
+The script win/stage1.py must be executed at boot time in the virtual machine
+image you wish to run with GZA. This downloads the stage2.py binary that is
+stored on the host running the virtual machines. stage2.py has experiment
+specific instructions for obtaining and running the binary(ies) you wish to
+analyze. For most purposes, and to verify my experiments, win/stage2-dropper.py
+should be sufficient.
 
 = License =
 Copyright (c) 2011 Yacin Nadji
