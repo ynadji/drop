@@ -19,8 +19,9 @@ def domainsandips(pcappath, allips=False):
         trans = ip.data
 
         try:
-            ips.add(socket.inet_ntoa(ip.src))
-            ips.add(socket.inet_ntoa(ip.dst))
+            if type(trans) == dpkt.tcp.TCP:
+                ips.add(socket.inet_ntoa(ip.src))
+                ips.add(socket.inet_ntoa(ip.dst))
 
             if type(trans) == dpkt.udp.UDP and \
                     (trans.sport == 53 or trans.dport == 53):
