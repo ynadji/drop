@@ -1,5 +1,11 @@
-games <- c("dnsw","tcpw")
-#games <- c("dns1","dnsw","tcpw","tcp1","tcp2","tcp3")
+study <- "representative"
+#study <- "longterm"
+
+if (study == "longterm") {
+  games <- c("dnsw","tcpw")
+} else {
+  games <- c("dns1","dnsw","tcpw","tcp1","tcp2","tcp3")
+}
 
 gains <- function(ds, control.colname, var.colname) {
   print(paste(control.colname, var.colname))
@@ -59,15 +65,18 @@ main <- function(file, games) {
   }
 
   print("Overall:")
-  #overall <- subset(ds, (dns1domaincount > nonedomaincount & dns1domaincount < 100) |
-  #                      (dnswdomaincount > nonedomaincount & dnswdomaincount < 100) |
-  #                      (tcpwipcount > noneipcount & tcpwipcount < 100) |
-  #                      (tcp1ipcount > noneipcount & tcp1ipcount < 100) |
-  #                      (tcp2ipcount > noneipcount & tcp2ipcount < 100) |
-  #                      (tcp3ipcount > noneipcount & tcp3ipcount < 100)
-  #                 )
-  overall <- subset(ds, (dnswdomaincount > nonedomaincount & dnswdomaincount < 100) |
-                        (tcpwipcount > noneipcount & tcpwipcount < 100))
+  if (study == "representative") {
+    overall <- subset(ds, (dns1domaincount > nonedomaincount & dns1domaincount < 100) |
+                          (dnswdomaincount > nonedomaincount & dnswdomaincount < 100) |
+                          (tcpwipcount > noneipcount & tcpwipcount < 100) |
+                          (tcp1ipcount > noneipcount & tcp1ipcount < 100) |
+                          (tcp2ipcount > noneipcount & tcp2ipcount < 100) |
+                          (tcp3ipcount > noneipcount & tcp3ipcount < 100)
+                     )
+  } else {
+    overall <- subset(ds, (dnswdomaincount > nonedomaincount & dnswdomaincount < 100) |
+                          (tcpwipcount > noneipcount & tcpwipcount < 100))
+  }
   print(paste(nrow(overall), "/", nrow(ds), ":", nrow(overall)/nrow(ds)))
   print("Overlap:")
   for (g1 in games) {
@@ -95,18 +104,20 @@ main <- function(file, games) {
     }
   }
 
-  #dns1 <- subset(ds, (dns1domaincount > nonedomaincount & dns1domaincount < 100))
-  #dnsw <- subset(ds, (dnswdomaincount > nonedomaincount & dnswdomaincount < 100))
-  #tcpw <- subset(ds, (tcpwipcount > noneipcount & tcpwipcount < 100))
-  #tcp1 <- subset(ds, (tcp1ipcount > noneipcount & tcp1ipcount < 100))
-  #tcp2 <- subset(ds, (tcp2ipcount > noneipcount & tcp2ipcount < 100))
-  #tcp3 <- subset(ds, (tcp3ipcount > noneipcount & tcp3ipcount < 100))
+  if (study == "representative") {
+    dns1 <- subset(ds, (dns1domaincount > nonedomaincount & dns1domaincount < 100))
+    dnsw <- subset(ds, (dnswdomaincount > nonedomaincount & dnswdomaincount < 100))
+    tcpw <- subset(ds, (tcpwipcount > noneipcount & tcpwipcount < 100))
+    tcp1 <- subset(ds, (tcp1ipcount > noneipcount & tcp1ipcount < 100))
+    tcp2 <- subset(ds, (tcp2ipcount > noneipcount & tcp2ipcount < 100))
+    tcp3 <- subset(ds, (tcp3ipcount > noneipcount & tcp3ipcount < 100))
 
-  #dns <- merge(dns1, dnsw, all=TRUE)
-  #tcp <- merge(tcpw, merge(tcp1, merge(tcp2, tcp3, all=TRUE), all=TRUE), all=TRUE)
+    dns <- merge(dns1, dnsw, all=TRUE)
+    tcp <- merge(tcpw, merge(tcp1, merge(tcp2, tcp3, all=TRUE), all=TRUE), all=TRUE)
 
-  #print("dns vs. tcp")
-  #jaccard(dns, tcp)
+    print("dns vs. tcp")
+    jaccard(dns, tcp)
+  }
 }
 
 options(width=220)
