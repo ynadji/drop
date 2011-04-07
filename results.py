@@ -24,6 +24,9 @@ def notwhitelisted(domain):
 def notwhitelistedip(ip):
     return not whitelist.whitelistedip(ip)
 
+def nonewlines(strings):
+    return [s.replace('\n', '').replace('\r', '') for s in strings]
+
 def run((md5, options)):
     try:
         # do stuff
@@ -42,9 +45,9 @@ def run((md5, options)):
 
         res = []
         domaincounts = [str(len(x)) for x in md5res]
-        domainstrs = [','.join(domains) for domains in md5res]
+        domainstrs = [','.join(nonewlines(domains)) for domains in md5res]
         ipcounts = [str(len(x)) for x in ipres]
-        ipstrs = [','.join(ips) for ips in ipres]
+        ipstrs = [','.join(nonewlines(ips)) for ips in ipres]
 
         for i in range(len(ipstrs)):
             res.append(ipcounts[i])
