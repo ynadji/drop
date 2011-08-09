@@ -14,6 +14,7 @@ import os
 import shutil
 import glob
 import time
+import datetime
 from signal import SIGINT, SIGUSR1
 from subprocess import Popen
 from optparse import OptionParser
@@ -52,6 +53,7 @@ def kvmmakeargs(opts, num, name):
             '-hda', '%s' % opts.vmimage,'-vnc', ':%d' % num,
             '-net', 'nic,vlan=%d,macaddr=ca:fe:de:ad:be:ef' % num, '-net',
             'dump,vlan=%d,file=%s/%s.pcap' % (num, opts.tcpdump, name),
+            '-rtc', 'base=%sT%s' % (opts.startdate, opts.starttime),
             '-net', 'tap,vlan=%d,ifname=tap%d,script=no,downscript=no' %
             (num, num)]
 
@@ -185,6 +187,12 @@ def main():
     parser.add_option("-k", "--sample-kvm-cmd", dest="kvmcmd", default=False,
             action="store_true",
             help="Output a KVM call based on the other options (to debug)")
+    parser.add_option("--startdate", dest="startdate",
+            default=datetime.datetime.now().strftime('%Y-%m-%d'),
+            help="Start date for VMs [default: %default]")
+    parser.add_option("--starttime", dest="starttime",
+            default=datetime.datetime.now().strftime('%H:%M:%S'),
+            help="Start time for VMs [default: %default]")
 
     (options, args) = parser.parse_args()
 
