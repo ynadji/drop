@@ -193,6 +193,8 @@ def main():
     parser.add_option("--starttime", dest="starttime",
             default=datetime.datetime.now().strftime('%H:%M:%S'),
             help="Start time for VMs [default: %default]")
+    parser.add_option('-b', '--backup', default=False, action='store_true',
+            help='Run the necessary games to perform backup plan classification')
 
     (options, args) = parser.parse_args()
 
@@ -219,7 +221,13 @@ def main():
     except OSError: # Use an existing directory
         pass
 
-    games = options.games.split(',')
+    if options.backup:
+        games = 'none,dnsw,tcpw,dnsw,tcpw'.split(',')
+        if options.numvms < 5:
+            sys.stderr.write('Must have at least 5 VMs for --backup\n')
+            options.numvms = 5
+    else:
+        games = options.games.split(',')
     sys.path.append('gza')
     from gza import startgame
 
@@ -259,15 +267,38 @@ def main():
                     i = vmlabels.pop(0)
                     installsample(options, sample, i)
                     print('Running: %s in VM #%d with game "%s"' % (sample, i, game))
-                    kvms.append(kvm(options, i,
-                        os.path.basename(sample) + '-' + game))
+                    if options.backup and (i % 5 == 3 or i % 5 == 4):
+                        kvms.append(kvm(options, i,
+                            '%s-%d-%s' % (os.path.basename(sample), options.runtime * 2, game)))
+                    else:
+                        kvms.append(kvm(options, i,
+                            '%s-%d-%s' % (os.path.basename(sample), options.runtime, game)))
                     time.sleep(0.5)
 
             print('Sleeping for %d seconds...' % options.runtime)
             time.sleep(options.runtime)
-            print('Terminating KVMs...')
-            for proc in kvms:
-                proc.terminate()
+            if options.backup:
+                print('Terminating t duration KVMs...')
+                for i, proc in enumerate(kvms):
+                    # When --backup is passed, we always run 5 games where the
+                    # last two must run for 2t time. We skip those, sleep again
+                    # for time t and proceed as usual.
+                    if not (i % 5 == 3 or i % 5 == 4):
+                        proc.terminate()
+
+                print('Sleeping (again) for %d seconds...' % options.runtime)
+                time.sleep(options.runtime)
+
+                # Terminate 2t VMs
+                print('Terminating 2t duration KVMs...')
+                for i, proc in enumerate(kvms):
+                    if i % 5 == 3 or i % 5 == 4:
+                        proc.terminate()
+            else:
+                print('Terminating KVMs...')
+                for proc in kvms:
+                    proc.terminate()
+
             del kvms[:]
             vmlabels = range(1, options.numvms + 1)
             print('KVMs terminated')
