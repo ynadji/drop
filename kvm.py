@@ -222,12 +222,12 @@ def main():
         pass
 
     if options.backup:
-        games = 'none,dnsw,tcpw,dnsw,tcpw'.split(',')
+        options.games = 'none,dnsw,tcpw,dnsw,tcpw'
         if options.numvms < 5:
             sys.stderr.write('Must have at least 5 VMs for --backup\n')
             options.numvms = 5
-    else:
-        games = options.games.split(',')
+
+    games = options.games.split(',')
     sys.path.append('gza')
     from gza import startgame
 
