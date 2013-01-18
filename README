@@ -17,7 +17,7 @@ an http server (lighttpd)
 tcpdump
 
 == GZA ==
-nfqueue-bindings-python (0.3)
+nfqueue-bindings-python (0.4)
 python-scapy (2.1.0)
 python-dnspython
 python-ipy

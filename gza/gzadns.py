@@ -91,7 +91,7 @@ class DNSGZA(GZA):
         print('Fell through game ifelif chain, do not spoof')
         return False
 
-    def playgame(self, i, payload):
+    def playgame(self, payload):
         data = payload.get_data()
         packet = IP(data)
         if packet.haslayer(DNS) and self.spoof(packet):

@@ -55,6 +55,10 @@ class TCPGZA(GZA):
         src_ip = packet[IP].src
         print("%s: IP address: %s" % (self.iface, src_ip))
 
+        if not packet.haslayer(TCP):
+            print('NOT a TCP packet, do not spoof...')
+            return False
+
         # IP for time.windows.com. See gzadns.py to see why this requires its
         # own separate "whitelist".
         if src_ip == '202.89.231.60':
@@ -83,7 +87,7 @@ class TCPGZA(GZA):
         print('Fell through game ifelif chain, do not spoof')
         return False
 
-    def playgame(self, i, payload):
+    def playgame(self, payload):
         """docstring for main"""
         data = payload.get_data()
         packet = IP(data)

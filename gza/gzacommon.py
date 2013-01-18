@@ -38,7 +38,7 @@ class GZA(object):
             self.q.unbind(socket.AF_INET)
             sys.exit(0)
 
-    def playgame(self, i, payload):
+    def playgame(self, payload):
         payload.set_verdict(nfqueue.NF_ACCEPT)
 
     def startgame(self):
