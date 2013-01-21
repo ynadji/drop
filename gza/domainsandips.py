@@ -44,23 +44,25 @@ def domainsandips(pcappath, allips=False):
 
 def main():
     """main function for standalone usage"""
-    usage = "usage: %prog [options] pcap"
+    usage = "usage: %prog [options] pcaps..."
     parser = OptionParser(usage=usage)
     parser.add_option('-a', '--all-ips', default=False, action='store_true',
                       dest='allips')
 
     (options, args) = parser.parse_args()
 
-    if len(args) != 1:
+    if len(args) < 1:
         parser.print_help()
         return 2
 
     # do stuff
-    (domains, ips) = domainsandips(args[0], allips=options.allips)
-    for domain in domains:
-        print(domain)
-    for ip in ips:
-        print(ip)
+    for pcap in args:
+        print('%s:' % pcap)
+        (domains, ips) = domainsandips(pcap, allips=options.allips)
+        for domain in domains:
+            print(domain)
+        for ip in ips:
+            print(ip)
 
 if __name__ == '__main__':
     sys.exit(main())
