@@ -13,7 +13,17 @@ def pcappath(md5, md5dir, gametype, t):
     return os.path.join(md5dir, '%s-%d-%s.pcap' % (md5, t, gametype))
 
 def J(s1, s2):
-    return float(len(s1 & s2)) / len(s1 | s2)
+    try:
+        return float(len(s1 & s2)) / len(s1 | s2)
+    except ZeroDivisionError:
+        return 0.0
+
+def _filterdips(pcappath):
+    domains, ips = domainsandips(pcappath)
+    return (domains, set(filter(isglobalip, ips)))
+
+def isglobalip(ip):
+    return not ip.startswith('192.168')
 
 def main():
     """main function for standalone usage"""
@@ -34,11 +44,11 @@ def main():
 
     for md5 in sys.stdin:
         md5 = md5.strip()
-        noneD, noneI = domainsandips(pcappath(md5, args[0], 'none', options.time))
-        dnswtD, dnswtI = domainsandips(pcappath(md5, args[0], 'dnsw', options.time))
-        tcpwtD, tcpwtI = domainsandips(pcappath(md5, args[0], 'tcpw', options.time))
-        dnswt2D, dnswt2I = domainsandips(pcappath(md5, args[0], 'dnsw', options.time * 2))
-        tcpwt2D, tcpwt2I = domainsandips(pcappath(md5, args[0], 'tcpw', options.time * 2))
+        noneD, noneI = _filterdips(pcappath(md5, args[0], 'none', options.time))
+        dnswtD, dnswtI = _filterdips(pcappath(md5, args[0], 'dnsw', options.time))
+        tcpwtD, tcpwtI = _filterdips(pcappath(md5, args[0], 'tcpw', options.time))
+        dnswt2D, dnswt2I = _filterdips(pcappath(md5, args[0], 'dnsw', options.time * 2))
+        tcpwt2D, tcpwt2I = _filterdips(pcappath(md5, args[0], 'tcpw', options.time * 2))
 
         # domain name features
         features.append(J(noneD, dnswtD))
