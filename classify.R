@@ -29,3 +29,10 @@ summary(cv)
 
 # Confusion matrix
 table(cv$fitted, ds$classlabel)
+#                dga finitedomain finiteip none p2p same
+#  dga           53            1        0    1   0    0
+#  finitedomain   0           21        0    1   0    0
+#  finiteip       0            0        0    0   0    0
+#  none           0            2        1    6   0    0
+#  p2p            1            1        1    1  77    0
+#  same           4            0        0    0   0  420
