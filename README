@@ -1,3 +1,5 @@
+This project is deprecated. See my fork of Cuckoo Sandbox instead: https://github.com/ynadji/cuckoo/tree/gza
+
 = Drop =
 Drop is a series of scripts that make dynamic malware analysis more
 straightforward with kvm.
